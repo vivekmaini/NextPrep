@@ -1,2 +1,11 @@
 # NextPrep
-AI Interview &amp; Placement Preparation Platform
+
+AI Interview & Placement Preparation Platform
+
+## Tech Stack
+
+- React.js
+- Node.js
+- Express.js
+- PostgreSQL
+- Gemini API
