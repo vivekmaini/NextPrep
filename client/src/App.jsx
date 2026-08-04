@@ -1,10 +1,24 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import VerifyEmail from "./pages/auth/verifyEmail";
+import Dashboard from "./pages/Dashboard";
+import Landing from "./pages/Landing";
+
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <h1 className="text-5xl font-bold text-blue-500">
-        NextPrep
-      </h1>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
