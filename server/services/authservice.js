@@ -10,8 +10,13 @@ const {
   getEmailVerification,
   incrementVerificationAttempts,
   removeEmailVerification,
+  savePasswordReset,
+  getPasswordReset,
+  incrementPasswordResetAttempts,
+  removePasswordReset,
+  updateUserPassword,
 } = require("../models/userModel");
-const { sendVerificationEmail } = require("./emailService");
+const { sendVerificationEmail, sendPasswordResetEmail } = require("./emailService");
 
 const OTP_LENGTH = 6;
 const OTP_TTL_MS = 10 * 60 * 1000;
@@ -123,6 +128,42 @@ const resendOtp = async (email) => {
   await sendOtp(normalizedEmail);
 };
 
+const requestPasswordReset = async (email) => {
+  const normalizedEmail = normalizeEmail(email);
+  const user = await getUserByEmail(normalizedEmail);
+
+  if (!user) throw new Error("No account found for this email address.");
+
+  const otp = createOtp();
+  const otpHash = await bcrypt.hash(otp, 10);
+  await savePasswordReset(normalizedEmail, otpHash, new Date(Date.now() + OTP_TTL_MS));
+  await sendPasswordResetEmail({ email: normalizedEmail, otp });
+};
+
+const resetPassword = async (email, otp, password) => {
+  const normalizedEmail = normalizeEmail(email);
+  const reset = await getPasswordReset(normalizedEmail);
+
+  if (!reset || new Date(reset.expires_at) < new Date()) {
+    if (reset) await removePasswordReset(normalizedEmail);
+    throw new Error("This code has expired. Request a new one and try again.");
+  }
+  if (reset.attempts >= MAX_OTP_ATTEMPTS) {
+    throw new Error("Too many incorrect attempts. Request a new code and try again.");
+  }
+
+  const isValid = await bcrypt.compare(otp, reset.otp_hash);
+  if (!isValid) {
+    await incrementPasswordResetAttempts(normalizedEmail);
+    throw new Error("That code is incorrect. Please try again.");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await updateUserPassword(normalizedEmail, passwordHash);
+  if (!user) throw new Error("Unable to reset this password.");
+  await removePasswordReset(normalizedEmail);
+};
+
 const googleAuth = async (credential) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
@@ -152,5 +193,7 @@ module.exports = {
   login,
   verifyOtp,
   resendOtp,
+  requestPasswordReset,
+  resetPassword,
   googleAuth,
 };

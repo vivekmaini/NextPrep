@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import AuthLayout from "../../components/layout/authLayout";
@@ -9,6 +9,9 @@ import GoogleButton from "../../components/ui/Googlebutton";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
+const initialNavigation = performance.getEntriesByType("navigation")[0];
+const openedByRefresh = window.location.pathname === "/register" && initialNavigation?.type === "reload";
+let refreshRedirectHandled = false;
 
 function validate({ name, email, password, confirmPassword }) {
   const errors = {};
@@ -49,6 +52,13 @@ export default function Register() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (openedByRefresh && !refreshRedirectHandled) {
+      refreshRedirectHandled = true;
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;

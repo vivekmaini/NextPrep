@@ -25,6 +25,18 @@ export const resendOtp = async ({ email }) => {
   return data;
 };
 
+// POST /api/auth/forgot-password
+export const requestPasswordReset = async ({ email }) => {
+  const { data } = await api.post("/auth/forgot-password", { email });
+  return data;
+};
+
+// POST /api/auth/reset-password
+export const resetPassword = async ({ email, otp, password }) => {
+  const { data } = await api.post("/auth/reset-password", { email, otp, password });
+  return data;
+};
+
 // POST /api/auth/google
 // credential is the Google ID token from Google Identity Services.
 export const googleAuth = async ({ credential }) => {

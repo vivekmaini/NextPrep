@@ -24,6 +24,58 @@ html {
   font-family: 'Manrope', sans-serif;
 }
 
+/* The authenticated workspace uses the same blue-led NextPrep palette at night. */
+.dashboard-night {
+  color-scheme: dark;
+}
+
+.dashboard-night [class~="bg-white"],
+.dashboard-night [class~="bg-[#FBFAF8]"],
+.dashboard-night [class~="bg-[#F6F9FF]"] {
+  background-color: #141d30 !important;
+}
+
+.dashboard-night [class~="bg-[#16213d]"] {
+  background-color: #0d1525 !important;
+}
+
+.dashboard-night [class*="bg-[#EAF1FF]"],
+.dashboard-night [class*="bg-[#E6EEFF]"],
+.dashboard-night [class*="bg-[#E8F6EF]"] {
+  background-color: #1d3157 !important;
+}
+
+.dashboard-night [class*="bg-[#0057FF]"] {
+  background-color: #2d72e8 !important;
+}
+
+.dashboard-night [class*="text-slate-"],
+.dashboard-night [class*="text-[#16213d]"] {
+  color: #cbd7ec !important;
+}
+
+.dashboard-night [class*="text-[#0057FF]"] {
+  color: #91b8ff !important;
+}
+
+.dashboard-night [class*="border-slate-"],
+.dashboard-night [class*="border-[#E9E5DC]"],
+.dashboard-night [class*="border-[#D8E5FF]"] {
+  border-color: #314564 !important;
+}
+
+.dashboard-night input,
+.dashboard-night textarea {
+  background-color: #0d1525 !important;
+  color: #edf3ff !important;
+  border-color: #3a5378 !important;
+}
+
+.dashboard-night ::selection {
+  background: #3d72cb;
+  color: #ffffff;
+}
+
 .landing-grid::before {
   position: absolute;
   inset: 0;
@@ -53,6 +105,9 @@ html {
 .animate-float { animation: float 5s ease-in-out infinite; }
 .animate-float-delayed { animation: float 5s ease-in-out 1.5s infinite; }
 .progress-fill { animation: progress 900ms 400ms cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: left; }
+.resume-results-enter { animation: resume-results-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.resume-score-pop { animation: resume-score-pop 650ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.resume-loader-dot { animation: resume-loader-dot 1.1s ease-in-out infinite; }
 
 @keyframes enter {
   from { opacity: 0; transform: translateY(18px); }
@@ -67,6 +122,22 @@ html {
 @keyframes progress {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
+}
+
+@keyframes resume-results-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes resume-score-pop {
+  0% { opacity: 0; transform: scale(0.72); }
+  70% { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes resume-loader-dot {
+  0%, 100% { transform: scale(0.8) rotate(0); opacity: 0.55; }
+  50% { transform: scale(1.15) rotate(18deg); opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

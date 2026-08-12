@@ -12,6 +12,18 @@ const ensureVerificationTable = async () => {
   `);
 };
 
+const ensurePasswordResetTable = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS password_resets (
+      email TEXT PRIMARY KEY,
+      otp_hash TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+};
+
 // Create User
 const createUser = async (fullName, email, password) => {
   const query = `
@@ -74,6 +86,43 @@ const removeEmailVerification = async (email) => {
   await pool.query("DELETE FROM email_verifications WHERE email = $1;", [email]);
 };
 
+const savePasswordReset = async (email, otpHash, expiresAt) => {
+  await ensurePasswordResetTable();
+  await pool.query(
+    `INSERT INTO password_resets (email, otp_hash, expires_at, attempts)
+     VALUES ($1, $2, $3, 0)
+     ON CONFLICT (email) DO UPDATE
+       SET otp_hash = EXCLUDED.otp_hash,
+           expires_at = EXCLUDED.expires_at,
+           attempts = 0,
+           created_at = NOW();`,
+    [email, otpHash, expiresAt]
+  );
+};
+
+const getPasswordReset = async (email) => {
+  await ensurePasswordResetTable();
+  const result = await pool.query("SELECT * FROM password_resets WHERE email = $1;", [email]);
+  return result.rows[0];
+};
+
+const incrementPasswordResetAttempts = async (email) => {
+  await pool.query("UPDATE password_resets SET attempts = attempts + 1 WHERE email = $1;", [email]);
+};
+
+const removePasswordReset = async (email) => {
+  await ensurePasswordResetTable();
+  await pool.query("DELETE FROM password_resets WHERE email = $1;", [email]);
+};
+
+const updateUserPassword = async (email, password) => {
+  const result = await pool.query(
+    "UPDATE users SET password = $2 WHERE email = $1 RETURNING *;",
+    [email, password]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   createUser,
   getUserByEmail,
@@ -81,4 +130,9 @@ module.exports = {
   getEmailVerification,
   incrementVerificationAttempts,
   removeEmailVerification,
+  savePasswordReset,
+  getPasswordReset,
+  incrementPasswordResetAttempts,
+  removePasswordReset,
+  updateUserPassword,
 };

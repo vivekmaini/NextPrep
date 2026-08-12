@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import AuthLayout from "../../components/layout/authLayout";
@@ -8,6 +8,9 @@ import OrDivider from "../../components/ui/OrDivider";
 import GoogleButton from "../../components/ui/Googlebutton";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const initialNavigation = performance.getEntriesByType("navigation")[0];
+const openedByRefresh = window.location.pathname === "/login" && initialNavigation?.type === "reload";
+let refreshRedirectHandled = false;
 
 function validate({ email, password }) {
   const errors = {};
@@ -34,6 +37,13 @@ export default function Login() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (openedByRefresh && !refreshRedirectHandled) {
+      refreshRedirectHandled = true;
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -85,6 +95,11 @@ export default function Login() {
           {formError}
         </div>
       )}
+      {location.state?.passwordReset && (
+        <div className="mb-5 rounded-md border border-[#A8E6CF] bg-[#F2FBF7] px-4 py-3 text-sm font-medium text-[#1F7A5C]">
+          Your password was reset. Log in with your new password.
+        </div>
+      )}
 
       <GoogleButton onError={setFormError} />
       <OrDivider />
@@ -112,6 +127,12 @@ export default function Login() {
           error={fieldErrors.password}
           autoComplete="current-password"
         />
+
+        <div className="-mt-1 text-right">
+          <Link to="/forgot-password" className="text-sm font-semibold text-[#0057FF] hover:underline">
+            Forgot password?
+          </Link>
+        </div>
 
         <Button type="submit" loading={loading} className="mt-2">
           Log in
