@@ -14,7 +14,7 @@ export default function Input({
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={id} className="text-sm font-semibold text-slate-700">
+        <label htmlFor={id} className="text-sm font-semibold text-[#131A2E]">
           {label}
         </label>
       )}
@@ -22,9 +22,9 @@ export default function Input({
         <input
           id={id}
           type={isPassword && isPasswordVisible ? "text" : type}
-          className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400
-            transition focus:border-[#0057FF] focus:outline-none focus:ring-4 focus:ring-[#E6EEFF]
-            ${isPassword ? "pr-12" : ""} ${error ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-slate-200"} ${className}`}
+          className={`w-full rounded-2xl border bg-[#F7F5EF] px-3.5 py-3 text-sm text-[#131A2E] placeholder:text-[#6B7280]
+            transition duration-200 focus:border-[#3355E8] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#EAEEFC]
+            ${isPassword ? "pr-12" : ""} ${error ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-[#DCE3FA]"} ${className}`}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : undefined}
           {...rest}
@@ -33,7 +33,7 @@ export default function Input({
           <button
             type="button"
             onClick={() => setIsPasswordVisible((visible) => !visible)}
-            className="absolute inset-y-0 right-0 flex items-center px-3 text-xs font-semibold text-slate-500 transition hover:text-[#0057FF] focus:outline-none focus-visible:text-[#0057FF]"
+            className="absolute inset-y-0 right-0 flex items-center px-3 text-xs font-semibold text-[#6B7280] transition hover:text-[#3355E8] focus:outline-none focus-visible:text-[#3355E8]"
             aria-label={isPasswordVisible ? "Hide password" : "Show password"}
           >
             {isPasswordVisible ? "Hide" : "Show"}

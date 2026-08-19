@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { startInterview } from "../services/interviewService";
+import { startInterview } from "../../services/interviewService";
 
 const modes = ["Behavioral", "Technical", "HR round"];
 

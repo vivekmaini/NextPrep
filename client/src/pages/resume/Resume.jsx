@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getLatestResume, uploadResume } from "../services/resumeService";
+import { getLatestResume, uploadResume } from "../../services/resumeService";
 
 const ACCEPTED_TYPES = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;

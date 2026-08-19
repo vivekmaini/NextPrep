@@ -1,8 +1,8 @@
 const VARIANT_CLASSES = {
   primary:
-    "bg-[#0057FF] text-white shadow-[0_8px_16px_rgba(0,87,255,0.2)] hover:bg-[#0047D1] hover:shadow-[0_10px_20px_rgba(0,87,255,0.25)] focus-visible:ring-[#0057FF] disabled:bg-blue-300 disabled:shadow-none",
+    "bg-[#3355E8] text-white shadow-[0_4px_8px_rgba(16,23,58,0.12),0_16px_32px_rgba(51,85,232,0.28)] hover:-translate-y-0.5 hover:bg-[#2542C4] hover:shadow-[0_8px_14px_rgba(16,23,58,0.14),0_20px_36px_rgba(51,85,232,0.32)] active:translate-y-0 active:scale-[0.98] focus-visible:ring-[#3355E8] disabled:bg-[#DCE3FA] disabled:shadow-none",
   secondary:
-    "bg-white text-[#0057FF] border border-[#0057FF] hover:bg-[#E6EEFF] focus-visible:ring-[#0057FF] disabled:text-blue-300 disabled:border-blue-200",
+    "bg-white text-[#3355E8] border border-[#DCE3FA] hover:-translate-y-0.5 hover:bg-[#EAEEFC] active:translate-y-0 active:scale-[0.98] focus-visible:ring-[#3355E8] disabled:text-[#6B7280] disabled:border-[#DCE3FA]",
 };
 
 /**
@@ -25,8 +25,8 @@ export default function Button({
     <button
       type={type}
       disabled={isDisabled}
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
-        transition duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold
+        transition duration-200 ease-out focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2
         disabled:cursor-not-allowed ${VARIANT_CLASSES[variant]} ${className}`}
       {...rest}
     >

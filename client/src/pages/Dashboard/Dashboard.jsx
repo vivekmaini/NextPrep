@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import BrandLogo from "../components/ui/BrandLogo";
-import Resume from "./Resume";
-import InterviewPractice from "./InterviewPractice";
+import { useAuth } from "../../context/AuthContext";
+import BrandLogo from "../../components/ui/BrandLogo";
+import MountainIllustration from "../../components/ui/MountainIllustration";
+import Resume from "../resume/Resume";
+import InterviewPractice from "../interview/InterviewPractice";
 
 const practiceModes = [
   { name: "Behavioral", detail: "Tell better stories from your experience.", time: "20 min" },
@@ -70,7 +71,7 @@ function Overview({ firstName, answer, setAnswer, result, checkAnswer }) {
     <p className="mt-3 max-w-lg text-sm leading-6 text-slate-500">Keep it small today. One thoughtful practice session is enough.</p>
 
     <section className="mt-10 grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(290px,0.75fr)]">
-      <article className="relative overflow-hidden rounded-[24px] bg-[#0057FF] p-6 text-white sm:p-7"><div className="absolute -right-12 -top-16 h-52 w-52 rounded-full border-[24px] border-white/10" aria-hidden="true" /><div className="relative flex items-start justify-between"><div><p className="text-xs font-bold tracking-[0.12em] text-blue-100">UP NEXT</p><h2 className="mt-3 font-display text-2xl font-bold tracking-tight">Mock interview</h2></div><button type="button" className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20" aria-label="More options">•••</button></div><p className="relative mt-3 max-w-sm text-sm leading-6 text-blue-100">Practice clear, confident answers for your product and HR round.</p><div className="relative mt-7 flex flex-wrap items-center gap-3 text-xs font-semibold text-blue-100"><span className="rounded-lg bg-white/10 px-2.5 py-1.5">25 minutes</span><span className="rounded-lg bg-white/10 px-2.5 py-1.5">8 questions</span></div><button type="button" className="relative mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#0057FF] transition hover:bg-blue-50">Begin practice <Arrow /></button></article>
+      <article className="relative overflow-hidden rounded-[24px] bg-[#3355E8] p-6 text-white sm:p-7"><div className="absolute -right-12 -top-16 h-52 w-52 rounded-full border-[24px] border-white/10" aria-hidden="true" /><MountainIllustration className="pointer-events-none absolute -bottom-10 right-0 w-64 opacity-65" /><div className="relative flex items-start justify-between"><div><p className="text-xs font-bold tracking-[0.12em] text-[#DCE3FA]">UP NEXT</p><h2 className="mt-3 font-display text-2xl font-bold tracking-tight">Mock interview</h2></div><button type="button" className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20" aria-label="More options">•••</button></div><p className="relative mt-3 max-w-[16rem] text-sm leading-6 text-[#DCE3FA]">Practice clear, confident answers for your product and HR round.</p><div className="relative mt-7 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#DCE3FA]"><span className="rounded-lg bg-white/10 px-2.5 py-1.5">25 minutes</span><span className="rounded-lg bg-white/10 px-2.5 py-1.5">8 questions</span></div><button type="button" className="relative mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#3355E8] transition hover:bg-[#EAEEFC]">Begin practice <Arrow /></button></article>
       <article className="rounded-[24px] border border-[#E9E5DC] bg-white p-6"><div className="flex items-center justify-between"><div><p className="text-xs font-bold tracking-[0.12em] text-slate-400">DAILY GOAL</p><h2 className="mt-2 font-display text-xl font-bold tracking-tight">Stay in rhythm</h2></div><div className="flex h-14 w-14 items-center justify-center rounded-full border-[6px] border-[#E6EEFF] text-sm font-bold text-[#0057FF]">70%</div></div><p className="mt-5 text-sm leading-6 text-slate-500">You&apos;ve completed <span className="font-bold text-[#16213d]">35 of 50 minutes</span> of focused preparation today.</p><div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-[70%] rounded-full bg-[#0057FF]" /></div><div className="mt-2 flex justify-between text-xs font-semibold text-slate-400"><span>35 min done</span><span>15 min left</span></div></article>
     </section>
 

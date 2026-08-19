@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { completeInterview } from "../services/interviewService";
+import { useAuth } from "../../context/AuthContext";
+import { completeInterview } from "../../services/interviewService";
 
 const questionSets = {
   Behavioral: ["Tell me about a difficult problem you solved.", "Describe a time you received difficult feedback.", "Tell me about a time you worked with conflicting priorities.", "Describe a project you are proud of and your contribution.", "What would you do differently in a past team project?"],

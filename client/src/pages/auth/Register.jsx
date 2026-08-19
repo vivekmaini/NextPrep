@@ -125,7 +125,7 @@ export default function Register() {
           name="name"
           type="text"
           label="Full name"
-          placeholder="Jane Doe"
+          placeholder="Enter Full Name"
           value={form.name}
           onChange={handleChange}
           error={fieldErrors.name}
@@ -136,7 +136,7 @@ export default function Register() {
           name="email"
           type="email"
           label="Email"
-          placeholder="you@example.com"
+          placeholder="Enter Your Email"
           value={form.email}
           onChange={handleChange}
           error={fieldErrors.email}
@@ -147,7 +147,7 @@ export default function Register() {
           name="password"
           type="password"
           label="Password"
-          placeholder="At least 8 characters"
+          placeholder="Enter Password"
           value={form.password}
           onChange={handleChange}
           error={fieldErrors.password}
@@ -158,7 +158,7 @@ export default function Register() {
           name="confirmPassword"
           type="password"
           label="Confirm password"
-          placeholder="Re-enter your password"
+          placeholder="Re-Enter Your Password"
           value={form.confirmPassword}
           onChange={handleChange}
           error={fieldErrors.confirmPassword}
