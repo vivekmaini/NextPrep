@@ -13,7 +13,7 @@ export default function InterviewSession() {
   const { isAuthenticated, initializing } = useAuth();
   const location = useLocation(); const navigate = useNavigate();
   const { mode = "Behavioral", difficulty = "Balanced", targetRole = "", experienceLevel = "", skills = "", questions: tailoredQuestions } = location.state || {};
-  const questions = tailoredQuestions?.length === 5 ? tailoredQuestions : questionSets[mode] || questionSets.Behavioral;
+  const questions = tailoredQuestions?.length >= 5 ? tailoredQuestions : questionSets[mode] || questionSets.Behavioral;
   const [index, setIndex] = useState(0); const [answer, setAnswer] = useState(""); const [responses, setResponses] = useState([]); const [loading, setLoading] = useState(false); const [feedback, setFeedback] = useState(null); const [error, setError] = useState("");
   if (initializing) return null; if (!isAuthenticated) return <Navigate to="/login" replace />;
   const next = async () => {

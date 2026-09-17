@@ -119,7 +119,7 @@ export default function Register() {
       <GoogleButton onError={setFormError} />
       <OrDivider />
 
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-2.5">
         <Input
           id="name"
           name="name"

@@ -1,0 +1,7 @@
+# Machine Learning and Gen AI Interview Knowledge Base
+
+1. Bias-Variance Tradeoff: High bias causes underfitting, while high variance causes overfitting. The goal is to find the sweet spot that minimizes total error on unseen data.
+2. Large Language Models (LLMs): Transformer-based neural networks trained on vast amounts of text data (e.g., GPT, BERT, Llama). They use self-attention mechanisms to understand context.
+3. Retrieval-Augmented Generation (RAG): A technique where an LLM is paired with a vector database. It searches external documents to provide accurate, grounded answers, reducing hallucinations.
+4. Fine-Tuning vs Prompt Engineering: Fine-tuning updates the model's weights using specific data. Prompt engineering guides the model using carefully crafted instructions without changing weights.
+5. Gradient Descent: An optimization algorithm used to minimize the cost function by iteratively updating model weights in the direction of the steepest descent.

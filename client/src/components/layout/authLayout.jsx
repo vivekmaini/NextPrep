@@ -3,44 +3,52 @@ import MountainIllustration from "../ui/MountainIllustration";
 
 export default function AuthLayout({ eyebrow, title, subtitle, children, footer }) {
   return (
-    <div className="min-h-screen bg-[#F7F5EF] p-3 sm:p-5 lg:flex lg:items-center lg:p-8">
-      <main className="mx-auto grid w-full max-w-[1100px] overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_8px_16px_rgba(16,23,58,0.06),0_32px_72px_rgba(51,85,232,0.16)] lg:min-h-[680px] lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="relative hidden overflow-hidden bg-[#10173A] p-10 text-white lg:flex lg:flex-col">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(51,85,232,0.72),transparent_38%),radial-gradient(circle_at_100%_100%,rgba(220,227,250,0.22),transparent_42%)]" />
-          <div className="absolute -right-20 top-1/3 h-64 w-64 rounded-full border border-white/15" />
-          <div className="relative z-10"><BrandLogo dark /></div>
-
-          <div className="relative z-10 max-w-sm pt-16">
-            <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-[0.12em] text-white/80">
-              CAREER PREP, SIMPLIFIED
-            </span>
-            <h2 className="mt-5 font-display text-3xl font-bold leading-[1.18] tracking-tight">
-              Build your future, one focused step at a time.
-            </h2>
-            <p className="mt-4 max-w-xs text-sm leading-6 text-white/75">
-              A calmer way to prepare for interviews, tests, and the opportunities ahead.
-            </p>
-            <div className="mt-7 flex items-center gap-2 text-xs font-semibold text-[#DCE3FA]"><span className="h-1.5 w-1.5 rounded-full bg-[#DCE3FA]" /> A calmer way to build momentum</div>
+    <div className="min-h-screen bg-[#F8F9FC] p-4 sm:p-6 lg:flex lg:items-center lg:justify-center">
+      <main className="mx-auto flex w-full max-w-[1040px] overflow-hidden rounded-[32px] border border-slate-200/60 bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] lg:min-h-[520px] lg:flex-row flex-col">
+        
+        {/* LEFT PANEL - Premium Dark Section */}
+        <section className="relative hidden w-[45%] overflow-hidden bg-[#0A0F24] p-8 lg:p-10 text-white lg:flex lg:flex-col justify-between">
+          {/* Modern Glow Effects */}
+          <div className="absolute -left-[20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[#3355E8] opacity-[0.15] blur-[100px]" />
+          <div className="absolute bottom-[-10%] right-[-20%] h-[400px] w-[400px] rounded-full bg-[#DCE3FA] opacity-[0.08] blur-[100px]" />
+          
+          {/* Top Content */}
+          <div className="relative z-20">
+            <BrandLogo dark />
+            <div className="mt-12">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[10px] font-bold tracking-widest text-white/80 backdrop-blur-md shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#3355E8] animate-pulse" /> CAREER PREP, SIMPLIFIED
+              </span>
+              <h2 className="mt-5 font-hero text-[44px] sm:text-[48px] font-extrabold leading-[1.08] tracking-[-0.05em] text-white">
+                Master your <br/> next interview.
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed text-slate-400 max-w-sm">
+                Join top candidates preparing with highly curated DSA roadmaps, real-world system design questions, and AI mock interviews.
+              </p>
+            </div>
           </div>
-          <div className="auth-mountain-stage" aria-hidden="true"><MountainIllustration className="auth-mountain" /></div>
+
+          {/* Bottom Mountain Illustration properly aligned using original CSS */}
+          <div className="auth-mountain-stage pointer-events-none" aria-hidden="true">
+            <MountainIllustration className="auth-mountain" />
+          </div>
         </section>
 
-        <section className="flex min-w-0 flex-col px-6 py-7 sm:px-10 sm:py-9 lg:px-16">
-          <div className="flex items-center justify-between lg:hidden">
+        {/* RIGHT PANEL - Auth Form */}
+        <section className="flex flex-1 lg:w-[55%] flex-col px-6 py-6 sm:py-8 sm:px-10 lg:px-16 justify-center">
+          <div className="flex items-center justify-between lg:hidden mb-12">
             <BrandLogo />
-            <span className="rounded-full bg-[#EAEEFC] px-3 py-1 text-xs font-semibold text-[#3355E8]">Career prep</span>
           </div>
 
-          <div className="mx-auto flex w-full max-w-[380px] flex-1 flex-col justify-center py-8 lg:py-0">
-            {eyebrow && <p className="mb-2 text-xs font-bold tracking-[0.1em] text-[#3355E8]">{eyebrow}</p>}
-            <h1 className="font-display text-[30px] font-bold tracking-[-0.04em] text-[#131A2E]">{title}</h1>
-            {subtitle && <p className="mt-2 text-sm leading-6 text-slate-500">{subtitle}</p>}
+          <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center">
+            {eyebrow && <p className="mb-3 text-[11px] font-bold tracking-[0.15em] text-[#3355E8] uppercase">{eyebrow}</p>}
+            <h1 className="font-hero text-[32px] sm:text-[38px] font-extrabold tracking-[-0.05em] text-[#131A2E] leading-[1.1]">{title}</h1>
+            {subtitle && <p className="mt-3 text-[15px] leading-relaxed font-medium text-slate-500">{subtitle}</p>}
 
             <div className="mt-6">{children}</div>
 
-            {footer && <div className="mt-6 text-center text-sm text-slate-500">{footer}</div>}
+            {footer && <div className="mt-6 pt-4 border-t border-slate-100 text-center text-sm font-medium text-slate-500">{footer}</div>}
           </div>
-          <p className="hidden text-center text-xs text-slate-400 lg:block">© {new Date().getFullYear()} NextPrep</p>
         </section>
       </main>
     </div>

@@ -1,0 +1,10 @@
+# System Design Interview Knowledge Base
+
+1. CAP Theorem: Consistency, Availability, and Partition Tolerance. You can only guarantee two out of the three at any given time in a distributed system.
+2. Load Balancing: Distributes network traffic across multiple servers. Algorithms include Round Robin, Least Connections, and IP Hash.
+3. Caching: Storing frequently accessed data in memory (e.g., Redis, Memcached). Strategies: Cache Aside, Write-Through, Write-Back.
+4. Database Scaling: 
+   - Vertical Scaling (scaling up) means adding more power (CPU, RAM).
+   - Horizontal Scaling (scaling out) means adding more nodes (sharding, partitioning).
+5. Microservices Architecture: Breaking down a monolithic app into small, independent services that communicate via APIs or gRPC.
+6. Message Queues: Asynchronous communication using Kafka or RabbitMQ to decouple services and handle high traffic loads gracefully.

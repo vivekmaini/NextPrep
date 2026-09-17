@@ -1,0 +1,28 @@
+# Verbal and English Aptitude
+
+## Reading Comprehension
+Read the passage once quickly to understand the main idea. Read questions before reading the passage a second time. For main idea questions, look at the first and last paragraphs. For detail questions, scan for specific keywords mentioned in the question. For inference questions, look for clues in the text and choose what is logically implied, not explicitly stated. Eliminate answer choices that are too extreme, irrelevant, or contradicted by the text. For vocabulary-in-context questions, read the sentence with each option to see which fits best. Time management: do not spend too much time on one passage if stuck.
+
+## Sentence Completion
+Read the entire sentence before looking at options. Look for clue words that indicate the relationship: contrast (but, however, although, despite, whereas), continuation (and, moreover, additionally, furthermore), cause-effect (because, since, therefore, consequently, thus). Identify whether the blank needs a positive or negative word. Eliminate options that do not fit grammatically or contextually. For two-blank questions, start with the easier blank to narrow down options. Practice recognising common word pairs that collocate.
+
+## Grammar Rules
+Subject-verb agreement: singular subjects take singular verbs, plural subjects take plural verbs. Collective nouns (team, group, committee) usually take singular verbs. Neither-nor and either-or: verb agrees with the nearer subject. Tenses: do not mix past and present in the same sentence unless showing a time relationship. Active voice is preferred over passive voice for clarity and conciseness. Common errors: its (possessive) vs it's (it is), their/there/they're, affect (verb) vs effect (noun), than (comparison) vs then (time), who (subject) vs whom (object), fewer (countable) vs less (uncountable).
+
+## Para Jumbles
+Para jumbles require arranging sentences in a logical order. Steps: find the opening sentence (introduces the topic, does not start with pronouns or connectors). Find the closing sentence (concludes or summarises). Look for pronoun references: if a sentence uses "he," "this," or "such," find the sentence that introduces the noun. Look for logical flow: cause before effect, general before specific, chronological order. Look for connectors: however, moreover, therefore, consequently indicate relationship with previous sentence. Link pairs of sentences first, then arrange the pairs.
+
+## Synonyms and Antonyms
+Build vocabulary systematically. Learn words in context rather than isolated definitions. Group related words together. Common synonym pairs: abundant-plentiful, ancient-archaic, brief-concise, candid-frank, diligent-industrious, eloquent-articulate, frugal-thrifty, genuine-authentic, hostile-antagonistic, lucid-clear, pragmatic-practical, resilient-tenacious, verbose-wordy. Common antonym pairs: abundant-scarce, benevolent-malevolent, conceal-reveal, diminish-augment, ephemeral-permanent, frivolous-serious, gregarious-solitary, humble-arrogant, innocent-guilty, lethargic-energetic.
+
+## Error Detection
+Read the entire sentence before identifying errors. Check for: subject-verb agreement, tense consistency, pronoun-antecedent agreement, parallel structure (items in a list should have the same grammatical form), misplaced modifiers (the modifier should be next to what it modifies), dangling modifiers (modifier with no clear subject), redundancy (do not repeat the same idea in different words), correct use of prepositions. Common errors: "between you and I" should be "between you and me." "Each of the students have" should be "Each of the students has." "The data shows" should be "The data show" (data is plural).
+
+## Idioms and Phrases
+Common idioms for placement exams: break the ice (start a conversation), burn the midnight oil (work late), hit the nail on the head (be exactly right), in the nick of time (just in time), a piece of cake (very easy), back to the drawing board (start over), bite the bullet (face something difficult), cost an arm and a leg (very expensive), get the ball rolling (start something), go the extra mile (do more than expected), once in a blue moon (very rarely), the tip of the iceberg (small visible part of a large problem), turn over a new leaf (start fresh), under the weather (feeling ill).
+
+## Verbal Reasoning
+Analogy: identify the relationship between the given pair and find a pair with the same relationship. Types: part-whole (wheel:car), cause-effect (fire:smoke), synonyms, antonyms, degree (warm:hot), tool-user (brush:painter), product-source (milk:cow). Logical deductions: All A are B, All B are C, therefore All A are C. Some A are B does not mean Some B are A is always true. Blood relations: draw family trees, identify relationships step by step. Coding-decoding: identify the pattern (letters shifted by fixed positions, reversed, or following a mathematical pattern). Statement and assumptions: check if the assumption is necessary for the statement to be valid.
+
+## Common Vocabulary for Placements
+Words frequently tested: Ambiguous (unclear, having multiple meanings), Benevolent (kind, charitable), Comprehensive (complete, thorough), Debilitate (weaken), Empirical (based on observation), Facilitate (make easier), Gregarious (sociable), Hypothesis (educated guess), Impeccable (flawless), Juxtapose (place side by side for comparison), Meticulous (very careful with details), Novice (beginner), Obsolete (outdated), Paradigm (model or pattern), Redundant (unnecessary, surplus), Scrutinise (examine carefully), Ubiquitous (found everywhere), Volatile (unstable, changing rapidly).

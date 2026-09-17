@@ -23,7 +23,7 @@ const embed = async (input) => {
     response = await fetch(`${baseUrl}/api/embed`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model, input: inputs }),
+      body: JSON.stringify({ model, input: inputs, keep_alive: "30m" }),
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (cause) {

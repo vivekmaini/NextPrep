@@ -1,0 +1,31 @@
+# Git and DevOps
+
+## Git Fundamentals
+Git is a distributed version control system. Every developer has a complete copy of the repository history. Repository (repo): a project tracked by Git. Working directory: your project files. Staging area (index): files ready to be committed. Local repository: committed snapshots on your machine. Remote repository: hosted on GitHub, GitLab, or Bitbucket. Basic workflow: edit files, stage changes (git add), commit snapshot (git commit), push to remote (git push). Git tracks content changes, not files. Each commit has a unique SHA hash, author, timestamp, and message.
+
+## Essential Git Commands
+git init: create a new repository. git clone URL: copy a remote repository. git status: show modified and staged files. git add file: stage specific file. git add .: stage all changes. git commit -m "message": create a snapshot. git push origin branch: upload to remote. git pull origin branch: download and merge remote changes. git fetch: download remote changes without merging. git log: view commit history. git log --oneline: compact history. git diff: show unstaged changes. git diff --staged: show staged changes. git stash: temporarily save uncommitted changes. git stash pop: restore stashed changes.
+
+## Branching and Merging
+git branch name: create a new branch. git checkout name or git switch name: switch to a branch. git checkout -b name: create and switch. git merge branch: merge another branch into current. Fast-forward merge: when current branch has no new commits, pointer moves forward. Three-way merge: when both branches have new commits, creates a merge commit. git branch -d name: delete a merged branch. git branch -D name: force delete. Branching strategies: feature branches (one branch per feature), GitFlow (main, develop, feature, release, hotfix branches), trunk-based development (short-lived branches merged frequently).
+
+## Merge Conflicts
+Conflicts occur when the same lines are modified in both branches. Git marks conflicts in the file with markers: <<<<<<< HEAD (your changes), ======= (separator), >>>>>>> branch (incoming changes). To resolve: edit the file to keep the correct code, remove conflict markers, stage the file (git add), commit. Use git mergetool for visual conflict resolution. Prevent conflicts by: pulling frequently, keeping branches short-lived, communicating with team about which files you are modifying, using feature flags instead of long-lived branches.
+
+## Git Rebase
+Rebase replays your commits on top of another branch. git rebase main: move your branch commits after the latest main. Creates a linear history without merge commits. Interactive rebase (git rebase -i HEAD~n): squash multiple commits into one, reword commit messages, reorder commits, drop commits. Golden rule: never rebase commits that have been pushed to a shared branch. Rebase vs merge: rebase creates cleaner linear history, merge preserves the true history of how branches evolved. Use rebase for local cleanup before merging to main.
+
+## Git Reset and Revert
+git reset --soft HEAD~1: undo last commit, keep changes staged. git reset --mixed HEAD~1: undo last commit, keep changes unstaged (default). git reset --hard HEAD~1: undo last commit and discard all changes (dangerous). git revert SHA: create a new commit that undoes a specific commit without rewriting history. Use revert for public branches, reset for local branches. git restore file: discard unstaged changes to a file. git restore --staged file: unstage a file. git reflog: shows all HEAD movements, useful for recovering lost commits after reset.
+
+## Pull Requests and Code Review
+A pull request (PR) or merge request proposes merging your branch into another. PR workflow: create feature branch, make changes, push to remote, open PR on GitHub/GitLab, team reviews code, address feedback, merge when approved. Good PR practices: write clear title and description, keep PRs small and focused, reference related issues, add screenshots for UI changes. Code review: check logic correctness, code style, edge cases, test coverage, security concerns, performance implications. Provide constructive feedback with suggestions, not just criticism.
+
+## Docker Basics
+Docker packages applications with their dependencies into containers. A container is a lightweight, isolated environment that runs consistently across machines. Dockerfile defines how to build a container image: FROM (base image), WORKDIR (set directory), COPY (add files), RUN (execute commands), EXPOSE (declare ports), CMD (default command). docker build -t name . builds an image. docker run -p 3000:3000 name runs a container. docker-compose.yml defines multi-container applications: database, backend, frontend running together. Volumes persist data. Networks connect containers. Benefits: consistent environments, isolation, easy deployment, reproducibility.
+
+## CI/CD Pipeline
+CI (Continuous Integration): automatically build and test code when changes are pushed. CD (Continuous Delivery): automatically deploy tested code to staging or production. Pipeline stages: code push triggers pipeline, install dependencies, run linter, run unit tests, run integration tests, build application, deploy to staging, run smoke tests, deploy to production. Tools: GitHub Actions, GitLab CI, Jenkins, CircleCI. GitHub Actions example: create .github/workflows/ci.yml with trigger (on push), jobs (test, build, deploy), steps (checkout, install, test, deploy). Benefits: catch bugs early, ensure code quality, automate repetitive tasks, faster release cycles.
+
+## Deployment Strategies
+Blue-Green Deployment: maintain two identical environments (blue and green). Deploy new version to inactive environment, switch traffic. Instant rollback by switching back. Rolling Deployment: gradually replace old instances with new ones. Canary Deployment: deploy to a small percentage of users first, monitor, then roll out to everyone. Feature Flags: deploy code with features disabled, enable for specific users or gradually. Rollback: ability to quickly revert to previous version if issues arise. For NextPrep: frontend on Vercel (automatic deployment on push), backend on Render (auto-deploy from GitHub), database on Neon PostgreSQL.

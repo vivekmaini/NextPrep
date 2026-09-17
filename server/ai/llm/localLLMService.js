@@ -34,13 +34,14 @@ const generateJson = async ({ systemPrompt, prompt, schema, temperature = 0.2 })
         model,
         stream: false,
         format: schema,
-        options: { temperature },
+        keep_alive: "30m",
+        options: { temperature, num_predict: 2500, num_ctx: 4096 },
         messages: [
           { role: "system", content: `${systemPrompt}\nReturn only valid JSON that conforms to the requested schema.` },
           { role: "user", content: prompt },
         ],
       }),
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: AbortSignal.timeout(180000),
     });
   } catch (cause) {
     if (cause?.name === "TimeoutError") {

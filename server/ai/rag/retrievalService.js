@@ -58,4 +58,4 @@ const buildRagContext = async (query, limit = 3) => {
   return results.map((result) => `[${result.title}]\n${result.content}`).join("\n\n");
 };
 
-module.exports = { buildRagContext, retrieveRelevantKnowledge };
+module.exports = { buildRagContext, retrieveRelevantKnowledge, ensureKnowledgeIndex };

@@ -5,127 +5,269 @@ import BrandLogo from "../../components/ui/BrandLogo";
 import MountainIllustration from "../../components/ui/MountainIllustration";
 import Resume from "../resume/Resume";
 import InterviewPractice from "../interview/InterviewPractice";
+import LiveMock from "./LiveMock";
+import Settings from "../Settings";
+import Support from "../Support";
+import Terms from "../Terms";
 
-const practiceModes = [
-  { name: "Behavioral", detail: "Tell better stories from your experience.", time: "20 min" },
-  { name: "Technical", detail: "Think aloud through problems clearly.", time: "30 min" },
-  { name: "HR round", detail: "Practice confident, concise answers.", time: "15 min" },
-];
+import { dashboardNav, NavIcons, UI, behavioralPrompts } from "./constants";
+import Overview from "./sections/Overview";
+import Progress from "./sections/Progress";
+import Resources from "./sections/Resources";
+import Coding from "./sections/Coding";
 
-const dashboardNav = ["Overview", "Resume", "Practice", "Progress", "Resources"];
-
-function Arrow() {
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M5 12h13" /><path d="m13 6 6 6-6 6" /></svg>;
-}
-
-export default function Dashboard() {
+function DashboardContent() {
   const { user, isAuthenticated, initializing, logout } = useAuth();
   const [page, setPage] = useState("Overview");
   const [nightMode, setNightMode] = useState(() => localStorage.getItem("nextprep-night-mode") === "true");
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  
+  const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem("nextprep-history") || "[]"));
+  const [dailyMinutes, setDailyMinutes] = useState(() => parseInt(localStorage.getItem("nextprep-minutes") || "0"));
+  const [milestone, setMilestone] = useState(() => {
+    const saved = localStorage.getItem("nextprep-milestone");
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 14);
+    return saved ? JSON.parse(saved) : { role: "Software Engineer", company: "Google", date: defaultDate.toISOString().split('T')[0] };
+  });
+
+  const [promptIndex, setPromptIndex] = useState(() => Math.floor(Math.random() * behavioralPrompts.length));
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState(null);
+  
   const firstName = (user?.full_name || user?.name || "there").trim().split(" ")[0];
 
   useEffect(() => {
     localStorage.setItem("nextprep-night-mode", String(nightMode));
   }, [nightMode]);
 
+  const cyclePrompt = () => {
+    setPromptIndex((prev) => {
+      let nextIndex = prev;
+      while (nextIndex === prev) {
+        nextIndex = Math.floor(Math.random() * behavioralPrompts.length);
+      }
+      return nextIndex;
+    });
+    setAnswer("");
+    setResult(null);
+  };
+
   const checkAnswer = () => {
+    if (answer.trim().length === 0) return;
     const words = answer.trim().split(/\s+/).filter(Boolean);
-    const hasAction = /\b(built|led|created|improved|solved|launched|designed|delivered)\b/i.test(answer);
-    const hasResult = /\b\d+[%+]?\b|\b(impact|result|outcome|increase|reduced)\b/i.test(answer);
+    const hasAction = /\b(built|led|created|improved|solved|launched|designed|delivered|learned)\b/i.test(answer);
+    const hasResult = /\b\d+[%+]?\b|\b(impact|result|outcome|increase|reduced|decreased)\b/i.test(answer);
     const score = words.length < 12 ? 42 : Math.min(94, 58 + (words.length > 35 ? 12 : 4) + (hasAction ? 12 : 0) + (hasResult ? 12 : 0));
-    setResult({ score, message: words.length < 12 ? "Add a little more detail: situation, action, then outcome." : hasResult ? "Strong signal—you made your impact clear." : "Good start. End with the outcome or what you learned." });
+    
+    const evalMessage = words.length < 12 ? "Add a little more detail: situation, action, then outcome." : hasResult ? "Strong signal—you made your impact clear." : "Good start. End with the outcome or what you learned.";
+    setResult({ score, message: evalMessage });
+
+    const newEntry = {
+      id: Date.now(),
+      title: "Quick Practice",
+      detail: "Behavioral Mock",
+      score: score,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    };
+    
+    const newHistory = [newEntry, ...history].slice(0, 15);
+    setHistory(newHistory);
+    localStorage.setItem("nextprep-history", JSON.stringify(newHistory));
+    
+    const newMinutes = dailyMinutes + 5;
+    setDailyMinutes(newMinutes);
+    localStorage.setItem("nextprep-minutes", newMinutes.toString());
+  };
+
+  const updateMilestone = () => {
+    const company = window.prompt("Enter Target Company:", milestone.company);
+    if (!company) return;
+    const dateStr = window.prompt("Enter Interview Date (YYYY-MM-DD):", milestone.date);
+    if (!dateStr || isNaN(Date.parse(dateStr))) return alert("Invalid date format!");
+    
+    const newMilestone = { ...milestone, company, date: dateStr };
+    setMilestone(newMilestone);
+    localStorage.setItem("nextprep-milestone", JSON.stringify(newMilestone));
   };
 
   if (initializing) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
+  const bgStyle = nightMode 
+    ? "bg-[#0D1525] text-[#EDF3FF]" 
+    : "bg-[radial-gradient(circle_at_76%_8%,#DCE3FA_0,transparent_24%),#F7F5EF] text-[#131A2E]";
+
   return (
-    <main className={`min-h-screen transition-colors duration-300 ${nightMode ? "dashboard-night bg-[#0D1525] text-[#EDF3FF]" : "bg-[#F8F7F4] text-[#16213d]"}`}>
+    <main className={`min-h-screen transition-colors duration-300 ${bgStyle}`}>
       <div className="mx-auto flex min-h-screen max-w-[1440px]">
-        <aside className="hidden w-[248px] shrink-0 flex-col border-r border-slate-200/80 bg-white px-5 py-7 lg:flex">
-          <BrandLogo />
-          <p className="mt-12 px-3 text-[10px] font-bold tracking-[0.14em] text-slate-400">YOUR SPACE</p>
-          <nav className="mt-3 space-y-1" aria-label="Dashboard navigation">
-            {dashboardNav.map((item, index) => <button key={item} type="button" onClick={() => setPage(item)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${page === item ? "bg-[#E6EEFF] text-[#0057FF]" : "text-slate-500 hover:bg-slate-50 hover:text-[#16213d]"}`}><span className={`flex h-6 w-6 items-center justify-center rounded-lg text-xs ${page === item ? "bg-[#0057FF] text-white" : "bg-slate-100 text-slate-400"}`}>{["□", "▤", "↗", "⌁", "◇"][index]}</span>{item}</button>)}
+        {/* Restored Modern Sidebar with reduced width (230px instead of 270px) */}
+        <aside className={`hidden w-[230px] shrink-0 flex-col px-4 py-8 lg:flex ${nightMode ? "border-r border-white/10 bg-[#10173A]/50 backdrop-blur-md" : "border-r border-[#DCE3FA] bg-white/60 backdrop-blur-xl"}`}>
+          <div className="px-3"><BrandLogo dark={nightMode} /></div>
+          
+          <p className={`mt-14 px-3 text-[10px] font-bold tracking-[0.15em] ${nightMode ? "text-slate-500" : "text-[#6B7280]"}`}>MAIN MENU</p>
+          
+          <nav className="mt-4 space-y-1.5" aria-label="Dashboard navigation">
+            {dashboardNav.map((item) => {
+              const isActive = page === item;
+              return (
+                <button 
+                  key={item} 
+                  onClick={() => setPage(item)} 
+                  className={`group relative flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all duration-300 overflow-hidden ${
+                    isActive 
+                      ? nightMode ? "bg-[#3355E8]/10 text-white" : "bg-white shadow-sm text-[#131A2E]"
+                      : nightMode ? "text-slate-400 hover:text-slate-200 hover:bg-white/5" : "text-[#6B7280] hover:text-[#131A2E] hover:bg-black/5"
+                  }`}
+                >
+                  {isActive && (
+                    <span className={`absolute left-0 top-1/2 -translate-y-1/2 h-1/2 w-1 rounded-r-md ${nightMode ? "bg-[#3355E8]" : "bg-[#3355E8]"}`} />
+                  )}
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? nightMode ? "bg-[#3355E8] text-white shadow-[0_0_12px_rgba(51,85,232,0.5)]" : "bg-[#EAEEFC] text-[#3355E8]" 
+                      : nightMode ? "text-slate-500 group-hover:text-slate-300" : "text-[#6B7280] group-hover:text-[#3355E8]"
+                  }`}>
+                    {NavIcons[item]}
+                  </span>
+                  {item}
+                </button>
+              );
+            })}
           </nav>
-          <div className="mt-10 border-t border-slate-100 pt-7"><p className="px-3 text-[10px] font-bold tracking-[0.14em] text-slate-400">YOUR RHYTHM</p><div className="mt-4 rounded-2xl bg-[#16213d] p-4 text-white"><p className="text-xs font-bold tracking-[0.12em] text-blue-200">ON A ROLL</p><p className="mt-2 text-sm font-semibold">Four thoughtful days in a row.</p><div className="mt-4 flex gap-1.5">{[1, 2, 3, 4, 5, 6, 7].map((day) => <span key={day} className={`h-2 flex-1 rounded-full ${day < 6 ? "bg-[#83AEFF]" : "bg-white/15"}`} />)}</div></div></div>
-          <button type="button" onClick={() => setNightMode((enabled) => !enabled)} aria-pressed={nightMode} className="mt-6 flex items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-[#16213d]"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-100 text-sm" aria-hidden="true">{nightMode ? "☀" : "☾"}</span>{nightMode ? "Day mode" : "Night mode"}</button>
-          <button type="button" onClick={logout} className="mt-auto px-3 text-left text-sm font-semibold text-slate-400 transition hover:text-red-500">Log out</button>
         </aside>
-        <section className="min-w-0 flex-1"><header className="flex items-center justify-between px-5 py-5 sm:px-8 lg:px-10 lg:py-7"><div className="lg:hidden"><BrandLogo /></div><p className="hidden text-sm font-medium text-slate-400 lg:block">Your preparation, at a glance</p><div className="flex items-center gap-3"><button type="button" onClick={() => setNightMode((enabled) => !enabled)} aria-label={nightMode ? "Switch to day mode" : "Switch to night mode"} aria-pressed={nightMode} className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-sm text-slate-500 transition hover:border-[#0057FF] hover:text-[#0057FF]">{nightMode ? "☀" : "☾"}</button><span className="hidden text-sm font-semibold text-slate-600 sm:block">{firstName}</span><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E6EEFF] text-xs font-bold text-[#0057FF]">{firstName[0]?.toUpperCase()}</span><button type="button" onClick={logout} className="text-xs font-bold text-slate-400 hover:text-red-500 lg:hidden">Log out</button></div></header>
-        <div className="mx-auto max-w-6xl px-5 pb-12 pt-7 sm:px-8 sm:pt-10 lg:px-10">
-          <div className="lg:hidden"><nav className="mb-10 grid grid-cols-2 rounded-xl border border-slate-200 bg-white p-1" aria-label="Dashboard navigation">{dashboardNav.map((item) => <button key={item} type="button" onClick={() => setPage(item)} className={`rounded-lg py-2 text-sm font-semibold ${page === item ? "bg-[#0057FF] text-white" : "text-slate-500"}`}>{item}</button>)}</nav></div>
-          {page === "Resume" ? <Resume /> : page === "Practice" ? <InterviewPractice /> : page === "Progress" ? <Progress /> : page === "Resources" ? <Resources /> : <Overview firstName={firstName} answer={answer} setAnswer={setAnswer} result={result} checkAnswer={checkAnswer} />}
-        </div></section>
+
+        {/* Main Area */}
+        <section className="min-w-0 flex-1 flex flex-col h-screen overflow-y-auto">
+          <header className={`sticky top-0 z-20 flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8 lg:py-4 backdrop-blur-md ${nightMode ? "bg-[#0D1525]/80 border-b border-white/5" : "bg-[#F7F5EF]/80 border-b border-[#DCE3FA]/50"}`}>
+            <div className="lg:hidden"><BrandLogo dark={nightMode} /></div>
+            <p className={`hidden text-sm font-bold tracking-wide lg:block ${nightMode ? "text-slate-400" : "text-[#6B7280]"}`}>Your preparation, at a glance</p>
+            
+            <div className="flex items-center gap-3 sm:gap-4 ml-auto">
+              <button 
+                onClick={() => setNightMode(!nightMode)} 
+                className={`group relative flex h-8 w-16 shrink-0 items-center rounded-full border transition-all duration-500 ${
+                  nightMode 
+                    ? "border-white/10 bg-[#10173A] shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)]" 
+                    : "border-[#DCE3FA] bg-[#EAEEFC] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]"
+                }`}
+                title={nightMode ? "Switch to Day" : "Switch to Night"}
+              >
+                {/* Sliding Thumb */}
+                <div 
+                  className={`absolute flex h-6 w-6 items-center justify-center rounded-full bg-white transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                    nightMode 
+                      ? "translate-x-9 shadow-[0_0_12px_rgba(51,85,232,0.8)] border border-transparent" 
+                      : "translate-x-1 shadow-sm border border-[#DCE3FA]"
+                  }`}
+                >
+                  <span className={`absolute flex items-center justify-center transition-all duration-500 ${nightMode ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100 text-amber-500"}`}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                  </span>
+                  <span className={`absolute flex items-center justify-center transition-all duration-500 ${nightMode ? "rotate-0 scale-100 opacity-100 text-[#3355E8]" : "-rotate-90 scale-0 opacity-0"}`}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                  </span>
+                </div>
+              </button>
+              
+              <div className="relative">
+                <button onClick={() => setShowProfileMenu(!showProfileMenu)} className={`flex items-center gap-2 rounded-full py-1 pl-2 pr-1 transition-all ${nightMode ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
+                  <span className={`hidden text-sm font-bold sm:block ${nightMode ? "text-white" : "text-[#131A2E]"}`}>{firstName}</span>
+                  <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-[#3355E8] text-sm font-bold text-white shadow-md ring-2 ring-white/20">
+                    {firstName[0]?.toUpperCase()}
+                  </div>
+                </button>
+                {showProfileMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                    <div className={`absolute right-0 top-full z-50 mt-2 w-56 origin-top-right overflow-hidden rounded-[24px] border shadow-soft-hero animate-in fade-in slide-in-from-top-2 ${nightMode ? "border-white/10 bg-[#10173A]" : "border-[#DCE3FA] bg-white"}`}>
+                      <div className={`border-b px-5 py-4 ${nightMode ? "border-white/10" : "border-[#DCE3FA]/50"}`}>
+                        <p className={`text-[10px] font-bold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-[#3355E8]"}`}>SIGNED IN AS</p>
+                        <p className={`mt-1 truncate text-sm font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>{user?.email}</p>
+                      </div>
+                      <div className="p-2">
+                        <button onClick={() => { setShowProfileMenu(false); setPage("Settings"); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${nightMode ? "text-slate-300 hover:bg-white/10" : "text-[#6B7280] hover:bg-[#EAEEFC] hover:text-[#3355E8]"}`}>Profile Settings</button>
+                        <button onClick={() => { setShowProfileMenu(false); setPage("Support"); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${nightMode ? "text-slate-300 hover:bg-white/10" : "text-[#6B7280] hover:bg-[#EAEEFC] hover:text-[#3355E8]"}`}>Help & Support</button>
+                        <button onClick={() => { setShowProfileMenu(false); setPage("Terms"); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${nightMode ? "text-slate-300 hover:bg-white/10" : "text-[#6B7280] hover:bg-[#EAEEFC] hover:text-[#3355E8]"}`}>Terms & Conditions</button>
+                      </div>
+                      <div className={`border-t p-2 ${nightMode ? "border-white/10" : "border-[#DCE3FA]/50"}`}>
+                        <button onClick={() => { setShowProfileMenu(false); logout(); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-bold text-red-500 transition-colors ${nightMode ? "hover:bg-red-500/10" : "hover:bg-red-50"}`}>Log out</button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </header>
+          
+          <div className="mx-auto w-full max-w-[1360px] px-4 pb-16 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <div className="lg:hidden -mx-4 mb-6 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <nav className="flex items-center gap-2">
+                {dashboardNav.map((item) => (
+                  <button key={item} onClick={() => setPage(item)} className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold transition-all ${page === item ? nightMode ? "bg-[#3355E8] text-white shadow-[0_0_12px_rgba(51,85,232,0.4)]" : "bg-[#131A2E] text-white shadow-md" : nightMode ? "bg-white/5 text-slate-400" : "bg-white text-[#6B7280] border border-transparent shadow-sm"}`}>
+                    {item}
+                  </button>
+                ))}
+              </nav>
+            </div>
+            
+            {page === "Resume" ? <Resume /> : 
+             page === "Practice" ? <InterviewPractice /> : 
+             page === "Mock Interview" ? <LiveMock nightMode={nightMode} /> :
+             page === "Coding" ? <Coding nightMode={nightMode} /> :
+             page === "Progress" ? <Progress nightMode={nightMode} history={history} setPage={setPage} /> : 
+             page === "Resources" ? <Resources nightMode={nightMode} setPage={setPage} /> : 
+             page === "Settings" ? <Settings nightMode={nightMode} user={user} /> :
+             page === "Support" ? <Support nightMode={nightMode} /> :
+             page === "Terms" ? <Terms nightMode={nightMode} /> : 
+              <Overview 
+                firstName={firstName} answer={answer} setAnswer={setAnswer} result={result} checkAnswer={checkAnswer} 
+                nightMode={nightMode} behavioralPrompts={behavioralPrompts} promptIndex={promptIndex} cyclePrompt={cyclePrompt} 
+                history={history} dailyMinutes={dailyMinutes} milestone={milestone} updateMilestone={updateMilestone}
+                setPage={setPage}
+              />
+            }
+          </div>
+        </section>
       </div>
     </main>
   );
 }
 
-function Overview({ firstName, answer, setAnswer, result, checkAnswer }) {
-  return <>
-    <p className="text-xs font-bold tracking-[0.14em] text-[#0057FF]">TUESDAY, 5 AUGUST</p>
-    <h1 className="mt-3 font-display text-4xl font-bold tracking-[-0.06em] sm:text-5xl">Good morning, {firstName}.</h1>
-    <p className="mt-3 max-w-lg text-sm leading-6 text-slate-500">Keep it small today. One thoughtful practice session is enough.</p>
 
-    <section className="mt-10 grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(290px,0.75fr)]">
-      <article className="relative overflow-hidden rounded-[24px] bg-[#3355E8] p-6 text-white sm:p-7"><div className="absolute -right-12 -top-16 h-52 w-52 rounded-full border-[24px] border-white/10" aria-hidden="true" /><MountainIllustration className="pointer-events-none absolute -bottom-10 right-0 w-64 opacity-65" /><div className="relative flex items-start justify-between"><div><p className="text-xs font-bold tracking-[0.12em] text-[#DCE3FA]">UP NEXT</p><h2 className="mt-3 font-display text-2xl font-bold tracking-tight">Mock interview</h2></div><button type="button" className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20" aria-label="More options">•••</button></div><p className="relative mt-3 max-w-[16rem] text-sm leading-6 text-[#DCE3FA]">Practice clear, confident answers for your product and HR round.</p><div className="relative mt-7 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#DCE3FA]"><span className="rounded-lg bg-white/10 px-2.5 py-1.5">25 minutes</span><span className="rounded-lg bg-white/10 px-2.5 py-1.5">8 questions</span></div><button type="button" className="relative mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#3355E8] transition hover:bg-[#EAEEFC]">Begin practice <Arrow /></button></article>
-      <article className="rounded-[24px] border border-[#E9E5DC] bg-white p-6"><div className="flex items-center justify-between"><div><p className="text-xs font-bold tracking-[0.12em] text-slate-400">DAILY GOAL</p><h2 className="mt-2 font-display text-xl font-bold tracking-tight">Stay in rhythm</h2></div><div className="flex h-14 w-14 items-center justify-center rounded-full border-[6px] border-[#E6EEFF] text-sm font-bold text-[#0057FF]">70%</div></div><p className="mt-5 text-sm leading-6 text-slate-500">You&apos;ve completed <span className="font-bold text-[#16213d]">35 of 50 minutes</span> of focused preparation today.</p><div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-[70%] rounded-full bg-[#0057FF]" /></div><div className="mt-2 flex justify-between text-xs font-semibold text-slate-400"><span>35 min done</span><span>15 min left</span></div></article>
-    </section>
 
-    <section className="mt-10 grid gap-8 lg:grid-cols-[0.85fr_1.15fr]">
-      <div><p className="text-xs font-bold tracking-[0.13em] text-[#0057FF]">YOUR MOMENTUM</p><h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.04em]">A steady week so far.</h2><div className="mt-6 space-y-5">{[["Interview practice", 67], ["Aptitude prep", 70], ["Resume review", 85]].map(([label, value]) => <div key={label}><div className="flex justify-between text-sm"><span className="font-semibold">{label}</span><span className="text-slate-400">{value}%</span></div><div className="mt-2 h-2 rounded-full bg-slate-200"><div className="h-full rounded-full bg-[#0057FF]" style={{ width: `${value}%` }} /></div></div>)}</div><p className="mt-8 inline-flex rounded-full bg-[#FFF1D8] px-3 py-1.5 text-xs font-bold text-[#A96508]">✦ Four-day practice streak</p></div>
-      <div className="rounded-[24px] border border-[#D8E5FF] bg-white p-6 sm:p-7"><p className="text-xs font-bold tracking-[0.13em] text-[#0057FF]">ANSWER SIGNAL</p><h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.04em]">Check the shape of an answer.</h2><p className="mt-2 text-sm leading-6 text-slate-500">Try this prompt: “Tell me about a problem you solved.”</p><textarea value={answer} onChange={(event) => { setAnswer(event.target.value); }} placeholder="Write a practice answer…" className="mt-5 min-h-28 w-full resize-none rounded-xl border border-slate-200 bg-[#FBFAF8] p-3.5 text-sm leading-6 outline-none placeholder:text-slate-400 focus:border-[#0057FF] focus:ring-4 focus:ring-[#E6EEFF]" maxLength={700} /><div className="mt-3 flex items-center justify-between"><span className="text-xs text-slate-400">{answer.trim() ? `${answer.trim().split(/\s+/).length} words` : "Aim for 35–60 words"}</span><button type="button" onClick={checkAnswer} className="rounded-xl bg-[#0057FF] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#0047D1]">Evaluate</button></div>{result && <div className="mt-5 flex items-center gap-3 rounded-xl bg-[#EAF1FF] p-3.5"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0057FF] text-sm font-bold text-white">{result.score}</span><p className="text-sm font-medium leading-5 text-slate-600">{result.message}</p></div>}</div>
-    </section>
-
-    <section className="mt-10"><div className="flex items-end justify-between"><div><p className="text-xs font-bold tracking-[0.13em] text-[#0057FF]">YOUR PLAN</p><h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.04em]">Keep building momentum</h2></div><button type="button" className="text-sm font-bold text-[#0057FF] hover:underline">View full plan</button></div><div className="mt-5 grid gap-4 md:grid-cols-3">{[["Interview practice", "8 of 12 questions completed", "67%", "Continue", "bg-[#0057FF]"], ["Aptitude prep", "14 of 20 questions completed", "70%", "Practice", "bg-[#F0A84A]"], ["Resume review", "One improvement left", "85%", "Review", "bg-[#257A5A]"]].map(([title, detail, percent, action, color]) => <article key={title} className="rounded-2xl border border-[#E9E5DC] bg-white p-5"><div className="flex items-start justify-between"><span className={`flex h-10 w-10 items-center justify-center rounded-xl text-white ${color}`}>✦</span><button type="button" className="text-xs font-bold text-[#0057FF] hover:underline">{action}</button></div><h3 className="mt-5 font-bold tracking-tight">{title}</h3><p className="mt-1 text-xs text-slate-500">{detail}</p><div className="mt-5 h-2 rounded-full bg-slate-100"><div className={`h-full rounded-full ${color}`} style={{ width: percent }} /></div><p className="mt-2 text-right text-xs font-bold text-slate-400">{percent}</p></article>)}</div></section>
-
-    <section className="mt-8 grid gap-4 pb-8 lg:grid-cols-[1.2fr_0.8fr]"><article className="rounded-2xl border border-[#E9E5DC] bg-white p-6"><div className="flex items-center justify-between"><div><p className="text-xs font-bold tracking-[0.12em] text-slate-400">THIS WEEK</p><h2 className="mt-2 font-display text-xl font-bold tracking-tight">Your consistency</h2></div><span className="rounded-full bg-[#FFF1D8] px-3 py-1.5 text-xs font-bold text-[#B66A00]">4-day streak</span></div><div className="mt-7 flex items-end justify-between gap-3">{[45, 72, 55, 90, 70, 20, 12].map((height, index) => <div key={index} className="flex flex-1 flex-col items-center gap-2"><div className="flex h-20 w-full max-w-8 items-end rounded-t-lg bg-slate-100"><div style={{ height: `${height}%` }} className={`w-full rounded-t-lg ${index < 5 ? "bg-[#0057FF]" : "bg-slate-200"}`} /></div><span className="text-[10px] font-semibold text-slate-400">{["M", "T", "W", "T", "F", "S", "S"][index]}</span></div>)}</div></article><article className="rounded-2xl border border-[#D8E5FF] bg-[#EAF1FF] p-6"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#0057FF]">✓</span><p className="mt-5 text-xs font-bold tracking-[0.12em] text-[#0057FF]">QUICK WIN</p><h2 className="mt-2 font-display text-xl font-bold tracking-tight">Review one answer</h2><p className="mt-2 text-sm leading-6 text-slate-600">Take two minutes to refine your strongest mock-interview response.</p><button type="button" className="mt-5 text-sm font-bold text-[#0057FF] hover:underline">Open feedback →</button></article></section>
-  </>;
+import React from 'react';
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    this.setState({ error, errorInfo });
+    console.error("Dashboard Error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '2rem', background: '#330000', color: '#ffaaaa', minHeight: '100vh', fontFamily: 'monospace' }}>
+          <h2>React Crash Detected in Dashboard</h2>
+          <details style={{ whiteSpace: 'pre-wrap' }}>
+            <summary>Click to view exact error</summary>
+            {this.state.error && this.state.error.toString()}
+            <br />
+            {this.state.errorInfo && this.state.errorInfo.componentStack}
+          </details>
+        </div>
+      );
+    }
+    return this.props.children; 
+  }
 }
 
-function Practice() {
-  const [selected, setSelected] = useState(practiceModes[0].name);
-  const [difficulty, setDifficulty] = useState("Balanced");
-  const mode = practiceModes.find((item) => item.name === selected);
-  return <section><p className="text-xs font-bold tracking-[0.14em] text-[#0057FF]">PRACTICE STUDIO</p><h1 className="mt-3 font-display text-4xl font-bold tracking-[-0.06em] sm:text-5xl">What do you want to sharpen?</h1><p className="mt-3 text-sm text-slate-500">Pick one area and keep the session focused.</p><div className="mt-10 grid gap-4 md:grid-cols-3">{practiceModes.map((item) => <button type="button" key={item.name} onClick={() => setSelected(item.name)} className={`rounded-2xl border p-5 text-left transition ${selected === item.name ? "border-[#0057FF] bg-[#EAF1FF] shadow-[0_12px_24px_rgba(0,87,255,0.1)]" : "border-slate-200 bg-white hover:border-[#AFC8FF]"}`}><p className="font-display text-lg font-bold">{item.name}</p><p className="mt-2 min-h-10 text-sm leading-5 text-slate-500">{item.detail}</p><p className="mt-5 text-xs font-bold text-[#0057FF]">{item.time}</p></button>)}</div><div className="mt-8 grid overflow-hidden rounded-[24px] border border-slate-200 bg-white lg:grid-cols-[0.85fr_1.15fr]"><div className="bg-[#16213d] p-7 text-white"><p className="text-xs font-bold tracking-[0.13em] text-blue-200">YOUR SESSION</p><h2 className="mt-3 font-display text-2xl font-bold">{mode.name} practice</h2><p className="mt-3 text-sm leading-6 text-slate-300">{mode.detail}</p><div className="mt-7 space-y-3 border-t border-white/10 pt-5 text-sm"><div className="flex justify-between"><span className="text-slate-300">Format</span><span className="font-semibold">Timed practice</span></div><div className="flex justify-between"><span className="text-slate-300">Feedback</span><span className="font-semibold">After each answer</span></div></div></div><div className="p-7"><p className="text-xs font-bold tracking-[0.13em] text-slate-400">SET THE PACE</p><h3 className="mt-2 font-display text-xl font-bold">How challenging should it feel?</h3><div className="mt-5 grid gap-3 sm:grid-cols-3">{["Gentle", "Balanced", "Stretch"].map((option) => <button key={option} type="button" onClick={() => setDifficulty(option)} className={`rounded-xl border px-3 py-3 text-left text-sm font-bold transition ${difficulty === option ? "border-[#0057FF] bg-[#EAF1FF] text-[#0057FF]" : "border-slate-200 text-slate-500"}`}><span className="block">{option}</span><span className="mt-1 block text-[11px] font-medium text-slate-400">{option === "Gentle" ? "Build comfort" : option === "Balanced" ? "Find your flow" : "Push your edge"}</span></button>)}</div><div className="mt-7 flex items-center justify-between border-t border-slate-100 pt-5"><p className="text-sm text-slate-500"><span className="font-bold text-[#16213d]">{mode.time}</span> · {difficulty}</p><button type="button" className="inline-flex items-center gap-2 rounded-xl bg-[#0057FF] px-5 py-3 text-sm font-bold text-white hover:bg-[#0047D1]">Begin session <Arrow /></button></div></div></div><div className="mt-7 overflow-hidden rounded-2xl border border-[#E9E5DC] bg-white"><p className="border-b border-slate-100 px-5 py-4 text-xs font-bold tracking-[0.12em] text-slate-400">RECENT PRACTICE</p>{[["Walk me through a project you’re proud of.", "Behavioral interview · Yesterday", "82"], ["How would you improve a student app?", "Product thinking · Monday", "76"]].map(([title, detail, score]) => <div key={title} className="flex items-center gap-4 border-b border-slate-100 p-4 last:border-0 sm:px-5"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EAF1FF] text-xs font-bold text-[#0057FF]">{score}</span><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{title}</p><p className="mt-1 text-xs text-slate-500">{detail}</p></div><button type="button" className="text-xs font-bold text-[#0057FF] hover:underline">Review</button></div>)}</div></section>;
+export default function Dashboard() {
+  return <ErrorBoundary><DashboardContent /></ErrorBoundary>;
 }
 
-function Progress() {
-  const metrics = [
-    ["Interview practice", "8 of 12 questions", 67, "bg-[#0057FF]"],
-    ["Aptitude prep", "14 of 20 questions", 70, "bg-[#F0A84A]"],
-    ["Resume review", "17 of 20 checks", 85, "bg-[#257A5A]"],
-  ];
-  const activity = [
-    ["Mock interview", "Behavioral · 25 min", "82", "Yesterday"],
-    ["Aptitude practice", "Quantitative reasoning · 20 min", "76", "Monday"],
-    ["Resume review", "Impact statements · 15 min", "88", "Sunday"],
-  ];
-
-  return <section>
-    <p className="text-xs font-bold tracking-[0.14em] text-[#0057FF]">YOUR PROGRESS</p>
-    <h1 className="mt-3 font-display text-4xl font-bold tracking-[-0.06em] sm:text-5xl">Small sessions add up.</h1>
-    <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">You&apos;ve kept a four-day streak and completed 35 focused minutes today.</p>
-    <div className="mt-10 grid gap-4 sm:grid-cols-3">{[["4", "Day streak"], ["11", "Sessions this week"], ["82", "Average score"]].map(([value, label]) => <article key={label} className="rounded-2xl border border-[#E9E5DC] bg-white p-5"><p className="font-display text-3xl font-bold tracking-tight text-[#0057FF]">{value}{label === "Average score" ? "%" : ""}</p><p className="mt-1 text-sm font-medium text-slate-500">{label}</p></article>)}</div>
-    <section className="mt-10 rounded-[24px] border border-[#E9E5DC] bg-white p-6 sm:p-7"><p className="text-xs font-bold tracking-[0.13em] text-slate-400">SKILL BREAKDOWN</p><h2 className="mt-2 font-display text-2xl font-bold tracking-tight">Keep the momentum going.</h2><div className="mt-7 space-y-6">{metrics.map(([name, detail, value, color]) => <div key={name}><div className="flex items-end justify-between gap-4"><div><p className="text-sm font-bold">{name}</p><p className="mt-1 text-xs text-slate-500">{detail}</p></div><span className="text-sm font-bold text-slate-500">{value}%</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} /></div></div>)}</div></section>
-    <section className="mt-8 overflow-hidden rounded-2xl border border-[#E9E5DC] bg-white"><div className="border-b border-slate-100 px-5 py-4"><p className="text-xs font-bold tracking-[0.12em] text-slate-400">RECENT ACTIVITY</p></div>{activity.map(([title, detail, score, date]) => <article key={title} className="flex items-center gap-4 border-b border-slate-100 p-4 last:border-0 sm:px-5"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EAF1FF] text-xs font-bold text-[#0057FF]">{score}</span><div className="min-w-0 flex-1"><p className="text-sm font-bold">{title}</p><p className="mt-1 text-xs text-slate-500">{detail}</p></div><span className="text-xs font-medium text-slate-400">{date}</span></article>)}</section>
-  </section>;
-}
-
-function Resources() {
-  const resources = [
-    ["Answer framework", "Use STAR to make your stories easy to follow.", "5 min read", "Interview"],
-    ["Technical interview checklist", "A concise preparation list for problem-solving rounds.", "8 min read", "Technical"],
-    ["Resume impact guide", "Turn responsibilities into clear, measurable outcomes.", "6 min read", "Resume"],
-    ["Calm before the interview", "A short routine for arriving focused and present.", "4 min read", "Mindset"],
-  ];
-  return <section>
-    <p className="text-xs font-bold tracking-[0.14em] text-[#0057FF]">RESOURCE LIBRARY</p>
-    <h1 className="mt-3 font-display text-4xl font-bold tracking-[-0.06em] sm:text-5xl">Useful when you need it.</h1>
-    <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">Short, practical guides to help you prepare with more confidence.</p>
-    <div className="mt-10 grid gap-4 md:grid-cols-2">{resources.map(([title, description, duration, category]) => <article key={title} className="group rounded-2xl border border-[#E9E5DC] bg-white p-6 transition hover:-translate-y-0.5 hover:border-[#AFC8FF] hover:shadow-[0_12px_28px_rgba(22,33,61,0.07)]"><div className="flex items-center justify-between"><span className="rounded-full bg-[#EAF1FF] px-3 py-1.5 text-xs font-bold text-[#0057FF]">{category}</span><span className="text-xs font-medium text-slate-400">{duration}</span></div><h2 className="mt-6 font-display text-xl font-bold tracking-tight">{title}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{description}</p><button type="button" className="mt-6 text-sm font-bold text-[#0057FF] group-hover:underline">Open guide <span aria-hidden="true">→</span></button></article>)}</div>
-  </section>;
-}

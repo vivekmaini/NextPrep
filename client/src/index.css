@@ -2,6 +2,8 @@
 @import "tailwindcss";
 body {
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-width: 320px;
   overflow-x: hidden;
   color: #131A2E;
@@ -20,14 +22,17 @@ html {
 
 .font-display {
   font-family: 'Sora', sans-serif;
+  letter-spacing: -0.025em;
 }
 
 .font-hero {
   font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.035em;
 }
 
 .font-brand {
   font-family: 'Manrope', sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* The authenticated workspace uses the same blue-led NextPrep palette at night. */

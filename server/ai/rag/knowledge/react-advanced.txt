@@ -1,0 +1,7 @@
+# React Advanced Interview Knowledge Base
+
+1. React Fiber: The core reconciliation engine in React 16+. It enables incremental rendering, allowing React to pause and resume work to prioritize animations and user input.
+2. useMemo vs useCallback: `useMemo` caches a computed value, while `useCallback` caches a function reference to prevent unnecessary re-renders of child components wrapped in `React.memo`.
+3. Context API: Avoid using Context for highly dynamic data that updates frequently, as it triggers re-renders in all consumers. Use state management (Redux, Zustand) instead.
+4. React Server Components (RSC): Allows components to render on the server, sending zero JavaScript to the client. This reduces bundle size and improves SEO.
+5. Virtual DOM: A lightweight JavaScript representation of the actual DOM. React compares the current VDOM with the new one (Diffing) and updates the real DOM efficiently in batches.
