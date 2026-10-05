@@ -29,12 +29,13 @@ const questionSchema = {
   required: ["questions"],
 };
 
-const generateQuestions = async ({ mode, difficulty, targetRole, experienceLevel, skills }) => {
-  const ragContext = await buildRagContext(`${mode} interview preparation for ${targetRole} ${skills}`);
-  const prompt = `You are an expert interview designer. Create exactly fifteen progressive ${mode} interview questions for a ${experienceLevel} candidate targeting ${targetRole}. Their stated skills are: ${skills || "not provided"}. Difficulty: ${difficulty}. Make questions relevant to their profile; avoid questions requiring undisclosed experience. CRITICAL RULE: Your questions MUST strictly match the target role (${targetRole}) and skills (${skills || "not provided"}). If the "TRUSTED PREPARATION CONTEXT" below is NOT relevant to the target role, completely IGNORE the context and generate highly specific questions for ${targetRole} using your own expert knowledge. Return questions only.\n\nTRUSTED PREPARATION CONTEXT:\n${ragContext}`;
+const generateQuestions = async ({ mode, difficulty, targetRole, experienceLevel, skills, count = 5, existingQuestions = [] }) => {
+  const avoidContext = existingQuestions.length > 0 ? "\nCRITICAL RULE: DO NOT REPEAT OR REPHRASE THESE QUESTIONS: " + existingQuestions.join(" | ") : "";
+  const ragContext = await buildRagContext(`${mode} interview preparation for ${targetRole} ${skills}`, 1);
+  const prompt = `You are an expert interview designer. Create exactly ${count} progressive ${mode} interview questions for a ${experienceLevel} candidate targeting ${targetRole}. Their stated skills are: ${skills || "not provided"}. Difficulty: ${difficulty}. Make questions relevant to their profile; avoid questions requiring undisclosed experience. CRITICAL RULE: Your questions MUST strictly match the target role (${targetRole}) and skills (${skills || "not provided"}). If the "TRUSTED PREPARATION CONTEXT" below is NOT relevant to the target role, completely IGNORE the context and generate highly specific questions for ${targetRole} using your own expert knowledge. Return questions only.${avoidContext}\n\nTRUSTED PREPARATION CONTEXT:\n${ragContext}`;
   const result = await generateJson({ systemPrompt: "You design realistic, fair mock interviews for placement preparation.", prompt, schema: questionSchema, temperature: 0.8 });
-  const questions = Array.isArray(result.questions) ? result.questions.map(String).map((item) => item.trim()).filter(Boolean).slice(0, 15) : [];
-  if (questions.length < 10) throw new Error("The local AI model could not create a complete interview. Please try again.");
+  const questions = Array.isArray(result.questions) ? result.questions.map(String).map((item) => item.trim()).filter(Boolean).slice(0, count) : [];
+  if (questions.length < Math.min(count, 2)) throw new Error("The local AI model could not create a complete interview. Please try again.");
   return questions;
 };
 
@@ -53,7 +54,7 @@ const evaluateAnswer = async ({ mode, difficulty, question, answer }) => {
 const evaluateSession = async ({ mode, difficulty, responses }) => {
   const transcript = responses.map((item, index) => `Question ${index + 1}: ${item.question}\nAnswer ${index + 1}: ${item.answer}`).join("\n\n");
   const ragContext = await buildRagContext(`${mode} interview evaluation`);
-  const prompt = `You are an experienced interviewer. Evaluate this complete ${mode} mock interview at ${difficulty} difficulty. Be candid, specific, and constructive. Judge relevance, clarity, structure, evidence, and communication across all answers. Do not invent facts or use markdown. Use the trusted preparation context only as coaching guidance. Calculate the overallScore based on a STRICT and REALISTIC evaluation of the answers. Rules: 1) If all answers are completely wrong or irrelevant, give exactly 0. 2) Deduct points heavily for lack of depth, missing keywords, or poor structure. 3) Even if every single answer is absolutely perfect, the MAXIMUM score you can give is 99. Do not ever give 100.\n\n${transcript}\n\nTRUSTED PREPARATION CONTEXT:\n${ragContext}`;
+  const prompt = `You are an experienced interviewer. Evaluate this complete ${mode} mock interview at ${difficulty} difficulty. Be candid, specific, and constructive. Judge relevance, clarity, structure, evidence, and communication across all answers. Do not invent facts or use markdown. Use the trusted preparation context only as coaching guidance. Calculate the overallScore based on a STRICT and REALISTIC evaluation of the answers. Rules: 1) If all answers are completely wrong or irrelevant, give exactly 0. 2) Deduct points heavily for lack of depth. 3) MAXIMUM score is 99. 4) CRITICAL: You MUST provide at least one strength and one improvement area in the arrays, no matter how brief or skipped the answers are. Always find at least one positive aspect.\n\n${transcript}\n\nTRUSTED PREPARATION CONTEXT:\n${ragContext}`;
   const result = await generateJson({ systemPrompt: "You are an experienced interviewer who gives concise, evidence-based, constructive feedback. CRITICAL: The overallScore MUST be evaluated on a scale of 0 to 100 (e.g., 85, 95). Do NOT use a 1-5 or 1-10 scale.", prompt, schema: sessionSchema });
   const overallScore = Number(result.overallScore);
   const summary = String(result.summary || "").trim();

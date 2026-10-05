@@ -1,5 +1,5 @@
 const DEFAULT_BASE_URL = "http://127.0.0.1:11434";
-const DEFAULT_MODEL = "qwen2.5:7b-instruct";
+const DEFAULT_MODEL = "gemini-3.5-flash";
 
 const asPositiveInteger = (value, fallback) => {
   const parsed = Number.parseInt(value, 10);

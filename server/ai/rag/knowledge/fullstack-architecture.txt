@@ -1,0 +1,8 @@
+MODERN FULLSTACK & SYSTEM ARCHITECTURE
+Topics:
+1. Frontend Architecture: Next.js SSR vs SSG vs ISR, React Server Components (RSC), State management (Zustand, Redux Toolkit), Web Vitals optimization (LCP, CLS).
+2. Backend API Design: REST vs GraphQL vs gRPC. Rate limiting algorithms (Token Bucket, Leaky Bucket). Webhooks and idempotency keys to prevent duplicate processing.
+3. Microservices: API Gateways, Service Mesh (Istio), Saga Pattern for distributed transactions, Circuit Breaker pattern (Resilience4j).
+4. Caching Strategies: Write-through vs Write-behind caching, Cache stampede prevention, CDN edge caching.
+5. Security: OAuth 2.0 flows, JWT (Access vs Refresh tokens, HttpOnly cookies), CSRF vs XSS prevention, CORS mechanics.
+Evaluation Guide: Candidates should speak beyond syntax. They should know how to handle 1 million concurrent users, database bottlenecks, and security vulnerabilities.

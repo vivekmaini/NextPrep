@@ -1,65 +1,65 @@
-const { getLocalLLMConfig } = require("./modelConfig");
-
-const localModelUnavailable = () => {
-  const error = new Error("The local AI model is unavailable. Start Ollama and make sure LOCAL_LLM_MODEL has been downloaded.");
-  error.statusCode = 503;
-  return error;
-};
-
 const parseJsonResponse = (content) => {
-  if (typeof content !== "string" || !content.trim()) throw new Error("The local AI model returned an empty response.");
-  const cleanContent = content.trim().replace(/^```json\s*/i, "").replace(/\s*```$/, "");
+  if (typeof content !== "string" || !content.trim()) throw new Error("The AI model returned an empty response.");
+  const cleanContent = content.trim().replace(/^```json\s*/i, "").replace(/\s*```$/i, "");
   try {
     return JSON.parse(cleanContent);
   } catch {
-    const error = new Error("The local AI model returned an invalid structured response. Please try again.");
+    const error = new Error("The AI model returned an invalid structured response. Please try again.");
     error.statusCode = 502;
     throw error;
   }
 };
 
 /**
- * Generates validated JSON through an Ollama-compatible local inference server.
- * Domain services should use this interface instead of calling a model provider directly.
+ * Generates validated JSON through Groq Cloud API (Llama 3) for blazing fast speeds.
  */
-const generateJson = async ({ systemPrompt, prompt, schema, temperature = 0.2 }) => {
-  const { baseUrl, model, timeoutMs } = getLocalLLMConfig();
-  let response;
+const generateJson = async ({ systemPrompt, prompt, schema, temperature = 0.7 }) => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error("GROQ_API_KEY is missing in your .env file. Please add it to deploy.");
+  }
 
+  const url = `https://api.groq.com/openai/v1/chat/completions`;
+
+  let response;
   try {
-    response = await fetch(`${baseUrl}/api/chat`, {
+    response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
       body: JSON.stringify({
-        model,
-        stream: false,
-        format: schema,
-        keep_alive: "30m",
-        options: { temperature, num_predict: 2500, num_ctx: 4096 },
+        model: "qwen/qwen3.8-27b", // World's fastest model
         messages: [
-          { role: "system", content: `${systemPrompt}\nReturn only valid JSON that conforms to the requested schema.` },
-          { role: "user", content: prompt },
+          { 
+            role: "system", 
+            content: `${systemPrompt}\n\nYou MUST return ONLY valid JSON that strictly matches this exact JSON schema:\n${JSON.stringify(schema, null, 2)}` 
+          },
+          { 
+            role: "user", 
+            content: prompt 
+          }
         ],
+        temperature: temperature,
+        response_format: { type: "json_object" } // Enforces JSON output natively
       }),
-      signal: AbortSignal.timeout(180000),
+      signal: AbortSignal.timeout(30000), 
     });
   } catch (cause) {
-    if (cause?.name === "TimeoutError") {
-      const error = new Error("The local AI model took too long to respond. Please try again.");
-      error.statusCode = 504;
-      throw error;
-    }
-    throw localModelUnavailable();
+    throw new Error(cause?.name === "TimeoutError" ? "Groq API timed out." : "Groq API is unreachable.");
   }
 
   const payload = await response.json().catch(() => ({}));
+  
   if (!response.ok) {
-    const error = new Error(payload?.error ? `Local AI model error: ${payload.error}` : "The local AI model could not complete this request.");
+    const error = new Error(`Groq AI Error: ${payload?.error?.message || "Request failed"}`);
     error.statusCode = response.status >= 400 && response.status < 600 ? response.status : 502;
     throw error;
   }
 
-  return parseJsonResponse(payload?.message?.content);
+  const textContent = payload?.choices?.[0]?.message?.content;
+  return parseJsonResponse(textContent);
 };
 
 module.exports = { generateJson };

@@ -97,4 +97,14 @@ const getSessionDetails = async (req, res) => {
   }
 };
 
-module.exports = { startInterview, saveQA, completeInterview, evaluateAnswer, getHistory, getSessionDetails };
+
+const generateMore = async (req, res) => {
+  try {
+    const { mode, difficulty, targetRole, experienceLevel, skills, existingQuestions, count } = req.body;
+    const questions = await interviewService.generateQuestions({ mode, difficulty, targetRole, experienceLevel, skills, count, existingQuestions });
+    res.status(200).json({ success: true, questions });
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+};
+module.exports = { startInterview, saveQA, completeInterview, evaluateAnswer, getHistory, getSessionDetails, generateMore };

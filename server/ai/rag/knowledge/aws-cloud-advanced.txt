@@ -1,0 +1,8 @@
+AWS & CLOUD ADVANCED ARCHITECTURE
+Topics:
+1. VPC & Networking: VPC Peering, Transit Gateway, NAT Gateway vs NAT Instances, Security Groups (stateful) vs NACLs (stateless).
+2. Serverless & Compute: AWS Lambda cold starts and how to mitigate them (Provisioned Concurrency), ECS vs EKS (Fargate), Step Functions for stateful workflows.
+3. Storage & Databases: S3 storage classes (Standard, IA, Glacier), DynamoDB Partition Keys, GSIs vs LSIs, Aurora Global Databases, ElastiCache (Redis vs Memcached) for high performance.
+4. Messaging & Events: SQS (Standard vs FIFO), SNS fan-out patterns, EventBridge for event-driven architecture, Kinesis for real-time streaming data.
+5. High Availability: Multi-AZ vs Multi-Region deployments, Route53 routing policies (Latency, Weighted, Failover), Auto Scaling Groups with predictive scaling.
+Evaluation Guide: A good candidate understands trade-offs (e.g., when NOT to use serverless, eventual vs strong consistency).
