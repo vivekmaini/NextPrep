@@ -5,10 +5,23 @@ import { NavIcons, UI, behavioralPrompts } from "../constants";
 export default function Progress({ nightMode, history, setPage }) {
   const avgScore = history.length > 0 ? Math.round(history.reduce((a, b) => a + b.score, 0) / history.length) : 0;
   
+  const getCategoryStats = (keywords) => {
+    const categoryInterviews = history.filter(h => 
+      keywords.some(kw => (h.detail || "").toLowerCase().includes(kw) || (h.title || "").toLowerCase().includes(kw))
+    );
+    if (categoryInterviews.length === 0) return { text: "Not started yet", score: 0 };
+    const avg = Math.round(categoryInterviews.reduce((a, b) => a + b.score, 0) / categoryInterviews.length);
+    return { text: `${categoryInterviews.length} sessions evaluated`, score: avg };
+  };
+
+  const sysDesignStats = getCategoryStats(["system design", "architecture"]);
+  const techStats = getCategoryStats(["technical", "algorithm", "dsa", "coding"]);
+  const behavioralStats = getCategoryStats(["behavioral", "hr round", "hr"]);
+
   const metrics = [
-    ["System Design", "Not started yet", 0, "bg-[#3355E8]"],
-    ["Algorithms", "Not started yet", 0, "bg-[#F0A84A]"],
-    ["Behavioral", `${history.length} responses evaluated`, avgScore, "bg-[#257A5A]"],
+    ["System Design", sysDesignStats.text, sysDesignStats.score, "bg-[#3355E8]"],
+    ["Technical & Algorithms", techStats.text, techStats.score, "bg-[#F0A84A]"],
+    ["Behavioral & HR", behavioralStats.text, behavioralStats.score, "bg-[#257A5A]"],
   ];
 
   return <section>
@@ -76,4 +89,3 @@ export default function Progress({ nightMode, history, setPage }) {
     </section>
   </section>;
 }
-

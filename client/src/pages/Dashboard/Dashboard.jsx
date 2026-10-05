@@ -23,6 +23,49 @@ function DashboardContent() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   
   const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem("nextprep-history") || "[]"));
+  const [isEvaluating, setIsEvaluating] = useState(false);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        
+        const response = await fetch("http://localhost:3001/api/interviews/history", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await response.json();
+        
+        if (data.success && data.history) {
+          // Format DB data for the frontend Activity view
+          const dbHistory = data.history.map(item => {
+            const dateStr = new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            const title = item.mode === "Technical" && item.target_role ? `Technical: ${item.target_role}` : `${item.mode || "Mock"} Interview`;
+            return {
+              id: `db-${item.id}`,
+              title: title,
+              date: dateStr,
+              detail: item.mode || "Behavioral",
+              score: item.overall_score || 0
+            };
+          });
+          
+          // Combine DB history with any recent local quick-practice history
+          const localHistory = JSON.parse(localStorage.getItem("nextprep-history") || "[]");
+          const combined = [...dbHistory, ...localHistory].sort((a, b) => {
+            if (a.id.toString().startsWith("db-") && !b.id.toString().startsWith("db-")) return -1;
+            return 0; // simple fallback
+          });
+          
+          setHistory(combined);
+        }
+      } catch (err) {
+        console.error("Failed to load real-time history from DB", err);
+      }
+    };
+    
+    fetchHistory();
+  }, []);
   const [dailyMinutes, setDailyMinutes] = useState(() => parseInt(localStorage.getItem("nextprep-minutes") || "0"));
   const [milestone, setMilestone] = useState(() => {
     const saved = localStorage.getItem("nextprep-milestone");
@@ -35,7 +78,8 @@ function DashboardContent() {
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState(null);
   
-  const firstName = (user?.full_name || user?.name || "there").trim().split(" ")[0];
+  const localProfile = JSON.parse(localStorage.getItem("nextprep-profile") || "{}");
+  const firstName = (localProfile.firstName || user?.name || user?.full_name || "there").trim().split(" ")[0];
 
   useEffect(() => {
     localStorage.setItem("nextprep-night-mode", String(nightMode));
@@ -53,31 +97,55 @@ function DashboardContent() {
     setResult(null);
   };
 
-  const checkAnswer = () => {
+  const checkAnswer = async () => {
     if (answer.trim().length === 0) return;
-    const words = answer.trim().split(/\s+/).filter(Boolean);
-    const hasAction = /\b(built|led|created|improved|solved|launched|designed|delivered|learned)\b/i.test(answer);
-    const hasResult = /\b\d+[%+]?\b|\b(impact|result|outcome|increase|reduced|decreased)\b/i.test(answer);
-    const score = words.length < 12 ? 42 : Math.min(94, 58 + (words.length > 35 ? 12 : 4) + (hasAction ? 12 : 0) + (hasResult ? 12 : 0));
     
-    const evalMessage = words.length < 12 ? "Add a little more detail: situation, action, then outcome." : hasResult ? "Strong signal—you made your impact clear." : "Good start. End with the outcome or what you learned.";
-    setResult({ score, message: evalMessage });
+    setIsEvaluating(true);
+    setResult(null);
 
-    const newEntry = {
-      id: Date.now(),
-      title: "Quick Practice",
-      detail: "Behavioral Mock",
-      score: score,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    };
-    
-    const newHistory = [newEntry, ...history].slice(0, 15);
-    setHistory(newHistory);
-    localStorage.setItem("nextprep-history", JSON.stringify(newHistory));
-    
-    const newMinutes = dailyMinutes + 5;
-    setDailyMinutes(newMinutes);
-    localStorage.setItem("nextprep-minutes", newMinutes.toString());
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:3001/api/interviews/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({
+          mode: "Behavioral",
+          difficulty: "Balanced",
+          question: behavioralPrompts[promptIndex],
+          answer: answer
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success && data.feedback) {
+        const score = data.feedback.score;
+        const evalMessage = data.feedback.feedback || "Good effort.";
+        setResult({ score, message: evalMessage });
+
+        const newEntry = {
+          id: Date.now(),
+          title: "Quick Practice",
+          detail: "Behavioral Mock",
+          score: score,
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        };
+        
+        const newHistory = [newEntry, ...history].slice(0, 15);
+        setHistory(newHistory);
+        localStorage.setItem("nextprep-history", JSON.stringify(newHistory));
+        
+        const newMinutes = dailyMinutes + 5;
+        setDailyMinutes(newMinutes);
+        localStorage.setItem("nextprep-minutes", newMinutes.toString());
+      } else {
+        throw new Error(data.message || "Invalid AI response.");
+      }
+    } catch (err) {
+      console.error(err);
+      setResult({ score: 0, message: "AI evaluation failed. Please try again." });
+    } finally {
+      setIsEvaluating(false);
+    }
   };
 
   const updateMilestone = () => {
@@ -183,7 +251,7 @@ function DashboardContent() {
                     <div className={`absolute right-0 top-full z-50 mt-2 w-56 origin-top-right overflow-hidden rounded-[24px] border shadow-soft-hero animate-in fade-in slide-in-from-top-2 ${nightMode ? "border-white/10 bg-[#10173A]" : "border-[#DCE3FA] bg-white"}`}>
                       <div className={`border-b px-5 py-4 ${nightMode ? "border-white/10" : "border-[#DCE3FA]/50"}`}>
                         <p className={`text-[10px] font-bold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-[#3355E8]"}`}>SIGNED IN AS</p>
-                        <p className={`mt-1 truncate text-sm font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>{user?.email}</p>
+                        <p className={`mt-1 truncate text-sm font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>{localProfile.email || user?.email}</p>
                       </div>
                       <div className="p-2">
                         <button onClick={() => { setShowProfileMenu(false); setPage("Settings"); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${nightMode ? "text-slate-300 hover:bg-white/10" : "text-[#6B7280] hover:bg-[#EAEEFC] hover:text-[#3355E8]"}`}>Profile Settings</button>
@@ -221,7 +289,7 @@ function DashboardContent() {
              page === "Support" ? <Support nightMode={nightMode} /> :
              page === "Terms" ? <Terms nightMode={nightMode} /> : 
               <Overview 
-                firstName={firstName} answer={answer} setAnswer={setAnswer} result={result} checkAnswer={checkAnswer} 
+                firstName={firstName} answer={answer} setAnswer={setAnswer} result={result} checkAnswer={checkAnswer} isEvaluating={isEvaluating} 
                 nightMode={nightMode} behavioralPrompts={behavioralPrompts} promptIndex={promptIndex} cyclePrompt={cyclePrompt} 
                 history={history} dailyMinutes={dailyMinutes} milestone={milestone} updateMilestone={updateMilestone}
                 setPage={setPage}

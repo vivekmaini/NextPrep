@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import MountainIllustration from "../../../components/ui/MountainIllustration";
 import { NavIcons, UI, behavioralPrompts } from "../constants";
 
-export default function Overview({ firstName, answer, setAnswer, result, checkAnswer, nightMode, behavioralPrompts, promptIndex, cyclePrompt, history, dailyMinutes, milestone, updateMilestone, setPage }) {
+export default function Overview({ firstName, answer, setAnswer, result, checkAnswer, isEvaluating, nightMode, behavioralPrompts, promptIndex, cyclePrompt, history, dailyMinutes, milestone, updateMilestone, setPage }) {
   const [showMockMenu, setShowMockMenu] = useState(false);
   
   const behavioralHistory = history.filter(h => h.detail.includes("Behavioral"));

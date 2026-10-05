@@ -1,108 +1,131 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Settings({ nightMode, user }) {
-  const inputClass = `mt-2 w-full rounded-xl border p-3.5 text-sm outline-none transition-all ${
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  
+  const [profile, setProfile] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "Software Engineer",
+    portfolio: ""
+  });
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    // Load from local storage
+    const storedProfile = JSON.parse(localStorage.getItem("nextprep-profile") || "{}");
+    setProfile({
+      firstName: storedProfile.firstName || user?.firstName || "Vivek",
+      lastName: storedProfile.lastName || user?.lastName || "Maini",
+      email: storedProfile.email || user?.email || "vivek@example.com",
+      role: storedProfile.role || "Software Engineer",
+      portfolio: storedProfile.portfolio || ""
+    });
+  }, [user]);
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    localStorage.setItem("nextprep-profile", JSON.stringify(profile));
+    
+    // Update global context so UI changes immediately
+    if (updateUser) {
+      updateUser({
+        ...user,
+        name: `${profile.firstName} ${profile.lastName}`.trim(),
+        email: profile.email,
+        role: profile.role
+      });
+    }
+
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 3000);
+  };
+
+  const handleExport = () => {
+    const data = {
+      profile,
+      history: JSON.parse(localStorage.getItem("nextprep-history") || "[]"),
+      minutes: localStorage.getItem("nextprep-minutes")
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "nextprep-export.json";
+    a.click();
+  };
+
+  const handleDelete = () => {
+    if(window.confirm("Are you sure you want to wipe your local data? This is irreversible.")) {
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
+
+  const inputClass = `mt-2 w-full rounded-xl border p-3.5 text-[15px] font-medium outline-none transition-all ${
     nightMode 
-      ? "border-white/10 bg-white/5 text-white focus:border-[#3355E8]" 
-      : "border-[#DCE3FA] bg-white text-[#131A2E] focus:border-[#3355E8] focus:ring-4 focus:ring-[#EAEEFC]"
+      ? "border-white/10 bg-white/5 text-white focus:border-[#0057FF]" 
+      : "border-slate-200 bg-[#FBFAF8] text-slate-800 focus:border-[#0057FF] focus:bg-white"
   }`;
 
-  const Toggle = ({ defaultChecked }) => (
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input type="checkbox" className="sr-only peer" defaultChecked={defaultChecked} />
-      <div className={`w-11 h-6 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${nightMode ? "bg-slate-700 peer-checked:bg-[#3355E8]" : "bg-slate-200 peer-checked:bg-[#3355E8]"}`}></div>
-    </label>
-  );
-
   return (
-    <section className="pb-12 max-w-4xl animate-in fade-in duration-500">
-      <p className="inline-flex items-center gap-2 rounded-full border border-[#DCE3FA] bg-white/80 px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] text-[#3355E8] shadow-sm">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#3355E8]" /> PREFERENCES
+    <section className="pb-16 max-w-4xl animate-in fade-in duration-500">
+      <p className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] text-[#0057FF] shadow-sm">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#0057FF]" /> PREFERENCES
       </p>
-      <h1 className={`mt-4 font-hero text-3xl font-bold tracking-[-0.05em] sm:mt-5 sm:text-5xl ${nightMode ? "text-white" : "text-[#131A2E]"}`}>Profile Settings.</h1>
-      <p className={`mt-3 text-sm leading-6 sm:mt-4 sm:text-base ${nightMode ? "text-slate-400" : "text-slate-600"}`}>Manage your personal information, notification preferences, and account security.</p>
+      <h1 className={`mt-4 font-display text-4xl font-bold tracking-tight sm:mt-5 sm:text-5xl ${nightMode ? "text-white" : "text-slate-800"}`}>Profile Settings.</h1>
+      <p className={`mt-3 text-[15px] leading-6 mb-10 ${nightMode ? "text-slate-400" : "text-slate-500"}`}>Manage your personal details, career goals, and data privacy locally.</p>
 
-      <div className="mt-10 space-y-8">
-        {/* Personal Details */}
-        <div className={`rounded-[28px] sm:rounded-[32px] border p-6 sm:p-9 shadow-soft ${nightMode ? "border-white/10 bg-[#10173A]/30" : "border-[#DCE3FA] bg-white"}`}>
-          <h2 className={`font-display text-xl font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>Personal Details</h2>
-          <p className={`mt-1 text-sm ${nightMode ? "text-slate-400" : "text-slate-500"}`}>Update your basic profile information.</p>
-          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+      <form onSubmit={handleSave} className="space-y-8">
+        <div className={`rounded-[28px] border p-8 sm:p-10 shadow-sm ${nightMode ? "border-white/10 bg-[#10173A]/50" : "border-slate-100 bg-white"}`}>
+          <h2 className={`font-display text-2xl font-bold ${nightMode ? "text-white" : "text-slate-800"}`}>Personal Details</h2>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2">
             <div>
-              <label className={`text-xs font-bold tracking-wide ${nightMode ? "text-slate-400" : "text-slate-500"}`}>FULL NAME</label>
-              <input type="text" defaultValue={user?.full_name || user?.name || "Student"} className={inputClass} />
+              <label className={`text-[11px] font-extrabold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-slate-500"}`}>FIRST NAME</label>
+              <input type="text" value={profile.firstName} onChange={e => setProfile({...profile, firstName: e.target.value})} className={inputClass} />
             </div>
             <div>
-              <label className={`text-xs font-bold tracking-wide ${nightMode ? "text-slate-400" : "text-slate-500"}`}>EMAIL ADDRESS</label>
-              <input type="email" defaultValue={user?.email || "student@university.edu"} disabled className={`${inputClass} opacity-60 cursor-not-allowed`} />
+              <label className={`text-[11px] font-extrabold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-slate-500"}`}>LAST NAME</label>
+              <input type="text" value={profile.lastName} onChange={e => setProfile({...profile, lastName: e.target.value})} className={inputClass} />
             </div>
-            <div>
-              <label className={`text-xs font-bold tracking-wide ${nightMode ? "text-slate-400" : "text-slate-500"}`}>PHONE NUMBER (OPTIONAL)</label>
-              <input type="tel" placeholder="+91 98765 43210" className={inputClass} />
-            </div>
-            <div>
-              <label className={`text-xs font-bold tracking-wide ${nightMode ? "text-slate-400" : "text-slate-500"}`}>LINKEDIN URL</label>
-              <input type="url" placeholder="linkedin.com/in/username" className={inputClass} />
+            <div className="sm:col-span-2">
+              <label className={`text-[11px] font-extrabold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-slate-500"}`}>EMAIL ADDRESS</label>
+              <input type="email" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})} className={inputClass} />
             </div>
           </div>
-          <button className="mt-8 rounded-full bg-[#3355E8] px-7 py-3 text-sm font-bold text-white shadow-md hover:-translate-y-0.5 transition-all">Save Profile</button>
         </div>
 
-        {/* Application Preferences */}
-        <div className={`rounded-[28px] sm:rounded-[32px] border p-6 sm:p-9 shadow-soft ${nightMode ? "border-white/10 bg-[#10173A]/30" : "border-[#DCE3FA] bg-white"}`}>
-          <h2 className={`font-display text-xl font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>Application Preferences</h2>
-          <p className={`mt-1 text-sm ${nightMode ? "text-slate-400" : "text-slate-500"}`}>Customize how NextPrep works for you.</p>
-          
+        <div className={`rounded-[28px] border p-8 sm:p-10 shadow-sm ${nightMode ? "border-white/10 bg-[#10173A]/50" : "border-slate-100 bg-white"}`}>
+          <h2 className={`font-display text-2xl font-bold ${nightMode ? "text-white" : "text-slate-800"}`}>Professional Profile</h2>
           <div className="mt-8 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`font-bold text-sm ${nightMode ? "text-slate-200" : "text-[#131A2E]"}`}>Daily Practice Reminders</p>
-                <p className={`text-xs mt-1 ${nightMode ? "text-slate-400" : "text-slate-500"}`}>Receive an email to keep your streak going.</p>
-              </div>
-              <Toggle defaultChecked={true} />
+            <div>
+              <label className={`text-[11px] font-extrabold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-slate-500"}`}>TARGET ROLE</label>
+              <input type="text" value={profile.role} onChange={e => setProfile({...profile, role: e.target.value})} className={inputClass} />
             </div>
-            <div className={`h-px w-full ${nightMode ? "bg-white/10" : "bg-[#DCE3FA]"}`}></div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`font-bold text-sm ${nightMode ? "text-slate-200" : "text-[#131A2E]"}`}>Strict Evaluation Mode</p>
-                <p className={`text-xs mt-1 max-w-[250px] sm:max-w-md ${nightMode ? "text-slate-400" : "text-slate-500"}`}>AI will evaluate your answers more harshly, expecting deep technical details and specific metrics.</p>
-              </div>
-              <Toggle defaultChecked={false} />
-            </div>
-            <div className={`h-px w-full ${nightMode ? "bg-white/10" : "bg-[#DCE3FA]"}`}></div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`font-bold text-sm ${nightMode ? "text-slate-200" : "text-[#131A2E]"}`}>Default Practice Difficulty</p>
-                <p className={`text-xs mt-1 ${nightMode ? "text-slate-400" : "text-slate-500"}`}>Select your target tier.</p>
-              </div>
-              <select className={`rounded-xl border p-2 text-sm outline-none transition-all ${nightMode ? "border-white/10 bg-[#10173A] text-white focus:border-[#3355E8]" : "border-[#DCE3FA] bg-[#F7F5EF]/50 text-[#131A2E] focus:border-[#3355E8]"}`}>
-                <option>Beginner (Startups)</option>
-                <option>Intermediate (Mid-level)</option>
-                <option>Advanced (MAANG / Tier-1)</option>
-              </select>
+            <div>
+              <label className={`text-[11px] font-extrabold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-slate-500"}`}>PORTFOLIO / GITHUB URL</label>
+              <input type="url" placeholder="https://" value={profile.portfolio} onChange={e => setProfile({...profile, portfolio: e.target.value})} className={inputClass} />
             </div>
           </div>
         </div>
-
-        {/* Subscription / Plan */}
-        <div className={`rounded-[28px] sm:rounded-[32px] border p-6 sm:p-9 shadow-soft flex items-center justify-between ${nightMode ? "border-[#3355E8]/30 bg-[#3355E8]/10" : "border-[#3355E8]/20 bg-[#EAEEFC]"}`}>
-          <div>
-            <h2 className={`font-display text-xl font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>Current Plan: Pro (Local)</h2>
-            <p className={`mt-2 text-sm max-w-xl ${nightMode ? "text-slate-300" : "text-[#6B7280]"}`}>You are running NextPrep locally via Ollama. You have unlimited practice sessions, resume generations, and full data privacy with no recurring cloud costs.</p>
-          </div>
-          <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-full bg-[#3355E8] text-white shadow-md">
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          </div>
+        
+        <div className="flex items-center gap-5 pt-4">
+          <button type="submit" className="rounded-2xl bg-[#0057FF] px-10 py-4 text-[15px] font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-600 hover:-translate-y-0.5 transition-all">Save Changes</button>
+          {isSaved && <span className="text-[15px] font-bold text-emerald-500 animate-in fade-in slide-in-from-left-2 flex items-center gap-2"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> Profile saved!</span>}
         </div>
+      </form>
 
-        {/* Danger Zone */}
-        <div className={`rounded-[28px] sm:rounded-[32px] border p-6 sm:p-9 shadow-soft ${nightMode ? "border-red-500/20 bg-red-500/5" : "border-red-100 bg-red-50/50"}`}>
-          <h2 className={`font-display text-xl font-bold ${nightMode ? "text-red-400" : "text-red-600"}`}>Danger Zone</h2>
-          <p className={`mt-2 text-sm ${nightMode ? "text-slate-400" : "text-slate-600"}`}>Permanently delete your account, wipe all history data, mock interview scores, and saved resumes. This action is irreversible.</p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-4">
-            <button className={`rounded-full px-6 py-3 text-sm font-bold transition-all ${nightMode ? "bg-white/5 text-slate-300 hover:bg-white/10" : "bg-white border border-slate-300 text-slate-700 shadow-sm hover:bg-slate-50"}`}>Export My Data</button>
-            <button className={`rounded-full px-6 py-3 text-sm font-bold transition-all ${nightMode ? "bg-red-500/20 text-red-400 hover:bg-red-500/30" : "bg-white border border-red-200 text-red-600 shadow-sm hover:bg-red-50"}`}>Delete Account</button>
-          </div>
+      {/* Danger Zone */}
+      <div className={`mt-12 rounded-[28px] border p-8 sm:p-10 shadow-sm ${nightMode ? "border-red-500/20 bg-red-500/5" : "border-red-100 bg-red-50"}`}>
+        <h2 className={`font-display text-xl font-bold ${nightMode ? "text-red-400" : "text-red-600"}`}>Danger Zone</h2>
+        <p className={`mt-3 text-[15px] leading-relaxed max-w-2xl ${nightMode ? "text-slate-400" : "text-slate-600"}`}>Permanently delete your account, wipe all history data, mock interview scores, and saved resumes. This action is irreversible.</p>
+        <div className="mt-8 flex flex-col sm:flex-row gap-4">
+          <button type="button" onClick={handleExport} className={`rounded-xl px-6 py-3.5 text-sm font-bold transition-all ${nightMode ? "bg-white/5 text-slate-300 hover:bg-white/10" : "bg-white border border-slate-300 text-slate-700 shadow-sm hover:bg-slate-50"}`}>Export My Data</button>
+          <button type="button" onClick={handleDelete} className={`rounded-xl px-6 py-3.5 text-sm font-bold transition-all ${nightMode ? "bg-red-500/20 text-red-400 hover:bg-red-500/30" : "bg-white border border-red-200 text-red-600 shadow-sm hover:bg-red-50"}`}>Delete Account</button>
         </div>
       </div>
     </section>

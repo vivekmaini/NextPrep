@@ -70,6 +70,10 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const updateUser = (updatedUser) => {
+    persistSession(token, updatedUser);
+  };
+
   const logout = () => {
     localStorage.removeItem(STORAGE_TOKEN_KEY);
     localStorage.removeItem(STORAGE_USER_KEY);
@@ -88,6 +92,7 @@ export function AuthProvider({ children }) {
     resendOtp,
     loginWithGoogle,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
