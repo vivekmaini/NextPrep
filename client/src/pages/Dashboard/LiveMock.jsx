@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { chatInterview } from "../../services/interviewService";
+import { getLatestResume } from "../../services/resumeService";
 
 export default function LiveMock({ nightMode }) {
   const [resume, setResume] = useState("");
   const [fileName, setFileName] = useState("");
+  const [hasUploadedResume, setHasUploadedResume] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -16,12 +19,24 @@ export default function LiveMock({ nightMode }) {
   const [interviewType, setInterviewType] = useState("Technical");
 
   const chatEndRef = useRef(null);
-  const OLLAMA_URL = "/api/ollama/chat";
-  const MODEL_NAME = "qwen2.5:7b-instruct"; // Updated to exact local model name
 
   useEffect(() => {
+    // 1. Check if user already uploaded a resume to Nextprep
+    getLatestResume()
+      .then((data) => {
+        if (data?.resume) {
+          setHasUploadedResume(true);
+          setFileName(data.resume.file_name);
+          const feedbackStr = data.resume.feedback ? JSON.stringify(data.resume.feedback) : "";
+          const summaryStr = `[Resume: ${data.resume.file_name} | ATS Score: ${data.resume.ats_score}]\n${feedbackStr}`;
+          setResume(summaryStr);
+        }
+      })
+      .catch(() => {});
+
+    // Fallback to local storage
     const saved = localStorage.getItem("nextprep_user_resume");
-    if (saved) setResume(saved);
+    if (saved && !resume) setResume(saved);
   }, []);
 
   useEffect(() => {
@@ -38,31 +53,21 @@ export default function LiveMock({ nightMode }) {
       reader.onload = (e) => setResume(e.target.result);
       reader.readAsText(file);
     } else {
-      setResume(`[Extracted from ${file.name}]\n\n(Note: True PDF parsing will happen on the backend. This is a placeholder. Please paste your text if you want to test the prompt right now.)`);
+      setResume(`[Uploaded file: ${file.name}]\n\nCandidate resume file attached.`);
     }
   };
 
   const startInterview = async () => {
-    if (!resume.trim()) return alert("Please upload or paste your resume first!");
+    if (!resume.trim() && !hasUploadedResume) {
+      return alert("Please upload your resume in the Resume section first before starting the mock interview!");
+    }
     
     localStorage.setItem("nextprep_user_resume", resume);
     setIsStarted(true);
     setMessages([{ role: "system", text: `System: Preparing a ${difficulty} ${interviewType} interview for the ${role} role...` }]);
     setIsThinking(true);
 
-    const systemPrompt = `You are a BRUTALLY REALISTIC and strict interviewer conducting a ${difficulty} level ${interviewType} interview for a ${role} position. 
-The candidate's resume is provided below.
-CRITICAL RULES:
-1. Ask exactly ONE clear question at a time. Do not list multiple questions.
-2. Your questions MUST be strictly based on the projects, tools, and experience mentioned in the Resume. Drill deep into their actual claims (e.g. "In your resume, you mentioned X, how exactly did you do Y?").
-3. REALISTIC EVALUATION: If the candidate answers poorly, says "I don't know", types gibberish, or completely misses the point, YOU MUST CALL THEM OUT professionally but strictly (e.g., "That is incorrect", "That shows a lack of foundational knowledge"). Do NOT give false praise if they are wrong.
-4. Keep your responses concise (under 3 sentences). Give a realistic reaction to their previous answer, then immediately ask the next question.
-
-Candidate Resume:
-${resume}`;
-
-    const initialContext = [
-      { role: "system", content: systemPrompt },
+    const initialMessages = [
       { role: "user", content: "Hello! I am ready for the interview. Please ask your first question based on my resume." }
     ];
 
@@ -82,53 +87,25 @@ ${resume}`;
       } catch(e) { console.error("DB Start Error:", e); }
     }
 
-
     try {
-      const res = await fetch(OLLAMA_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: MODEL_NAME, messages: initialContext, stream: true })
+      const data = await chatInterview({
+        messages: initialMessages,
+        role,
+        difficulty,
+        interviewType,
+        resume
       });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Ollama Error (${res.status}): ${errorText}`);
-      }
-      
+
+      const aiReply = data.reply || "Hello! Let's begin the interview. Can you introduce yourself and walk me through your main technical project?";
       setIsThinking(false);
-      setMessages([{ role: "ai", text: "" }]);
-      
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let aiFullResponse = "";
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-        
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const parsed = JSON.parse(line);
-            if (parsed.message?.content) {
-              aiFullResponse += parsed.message.content;
-              setMessages(prev => {
-                const newMsgs = [...prev];
-                newMsgs[newMsgs.length - 1].text = aiFullResponse;
-                return newMsgs;
-              });
-            }
-          } catch(e) {}
-        }
-      }
-      
-      setChatHistory([...initialContext, { role: "assistant", content: aiFullResponse }]);
+      setMessages([
+        { role: "system", text: `Interviewer ready. Session started.` },
+        { role: "ai", text: aiReply }
+      ]);
+      setChatHistory([...initialMessages, { role: "assistant", content: aiReply }]);
     } catch (err) {
       console.error("LiveMock Error:", err);
-      setMessages([{ role: "system", text: `Connection Error: ${err.message}. Make sure Ollama is running.` }]);
+      setMessages([{ role: "system", text: `Unable to start interview: ${err.message || "Please check your connection and try again."}` }]);
       setIsThinking(false);
     }
   };
@@ -146,56 +123,24 @@ ${resume}`;
     setChatHistory(updatedHistory);
 
     try {
-      const res = await fetch(OLLAMA_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: MODEL_NAME, messages: updatedHistory, stream: true })
+      const data = await chatInterview({
+        messages: updatedHistory,
+        role,
+        difficulty,
+        interviewType,
+        resume
       });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Ollama Error (${res.status}): ${errorText}`);
-      }
+
+      const aiFullResponse = data.reply || "Thank you for the answer. Could you elaborate on how you handled edge cases?";
       
       setIsThinking(false);
-      setMessages(prev => [...prev, { role: "ai", text: "" }]);
-      
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let aiFullResponse = "";
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-        
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const parsed = JSON.parse(line);
-            if (parsed.message?.content) {
-              aiFullResponse += parsed.message.content;
-              setMessages(prev => {
-                const newMsgs = [...prev];
-                newMsgs[newMsgs.length - 1].text = aiFullResponse;
-                return newMsgs;
-              });
-            }
-          } catch(e) {}
-        }
-      }
-
-      
+      setMessages(prev => [...prev, { role: "ai", text: aiFullResponse }]);
       setChatHistory(prev => [...prev, { role: "assistant", content: aiFullResponse }]);
 
       // API: Save Q&A pair to DB
       const currentToken = localStorage.getItem("token");
-      // Find the last actual question the AI asked (before user's new message)
       let lastAiQuestion = "Please ask your first question based on my resume.";
       if (updatedHistory.length >= 3) {
-         // The last item in updatedHistory is user's message, before that is AI's previous message
          lastAiQuestion = updatedHistory[updatedHistory.length - 2].content;
       }
       
@@ -327,11 +272,17 @@ ${resume}`;
             </div>
 
             <div className={`mt-8 pt-6 border-t ${nightMode ? "border-white/10" : "border-[#DCE3FA]/50"}`}>
+              {(!resume.trim() && !hasUploadedResume) && (
+                <p className="text-xs text-amber-500 font-semibold mb-3 text-center">
+                  ⚠️ Please upload your resume above before starting.
+                </p>
+              )}
               <button 
                 onClick={startInterview}
-                className="w-full rounded-2xl bg-[#3355E8] px-8 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(51,85,232,0.39)] transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(51,85,232,0.23)]"
+                disabled={!resume.trim() && !hasUploadedResume}
+                className="w-full rounded-2xl bg-[#3355E8] px-8 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(51,85,232,0.39)] transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(51,85,232,0.23)] disabled:opacity-50 disabled:pointer-events-none"
               >
-                Start Interview 
+                {(resume.trim() || hasUploadedResume) ? "Start Interview" : "Upload Resume to Start"} 
               </button>
             </div>
           </div>

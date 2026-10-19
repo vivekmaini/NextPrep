@@ -2,12 +2,13 @@
 const express = require("express");
 const router = express.Router();
 const verifyToken = require("../middleware/authMiddleware");
-const { startInterview, saveQA, completeInterview, evaluateAnswer, getHistory, getSessionDetails, generateMore } = require("../controllers/interviewController");
+const { startInterview, chatInterview, saveQA, completeInterview, evaluateAnswer, getHistory, getSessionDetails, generateMore } = require("../controllers/interviewController");
 
 // Use token verification for all interview routes
 router.use(verifyToken);
 
 router.post("/start", startInterview);
+router.post("/chat", chatInterview);
 router.post("/qa", saveQA);
 router.post("/complete", completeInterview);
 router.post("/evaluate", evaluateAnswer);

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { startInterview } from "../../services/interviewService";
+import { getLatestResume } from "../../services/resumeService";
 
 const modes = ["Behavioral", "Technical", "HR round"];
 
@@ -12,12 +13,31 @@ export default function InterviewPractice() {
   const [skills, setSkills] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasResume, setHasResume] = useState(null); // null = checking, true/false
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getLatestResume()
+      .then((data) => setHasResume(Boolean(data?.resume)))
+      .catch(() => setHasResume(false));
+  }, []);
+
   const begin = async () => {
+    if (hasResume === false) {
+      return setError("Please upload your resume in the Resume section before starting an interview.");
+    }
     if (mode === "Technical" && targetRole.trim().length < 2) return setError("Add the technical role you are preparing for.");
     setLoading(true); setError("");
-    try { const data = await startInterview({ mode, difficulty, targetRole: targetRole.trim(), experienceLevel, skills: skills.trim(), count: 2 }); navigate("/interview", { state: { mode, difficulty, targetRole: targetRole.trim(), experienceLevel, skills: skills.trim(), questions: data.questions } }); }
-    catch (requestError) { setError(requestError.message || "Couldn’t create your tailored interview."); }
+    try { 
+      const data = await startInterview({ mode, difficulty, targetRole: targetRole.trim(), experienceLevel, skills: skills.trim(), count: 2 }); 
+      navigate("/interview", { state: { mode, difficulty, targetRole: targetRole.trim(), experienceLevel, skills: skills.trim(), questions: data.questions } }); 
+    }
+    catch (requestError) { 
+      if (requestError.noResume || requestError.message?.toLowerCase().includes("resume")) {
+        setHasResume(false);
+      }
+      setError(requestError.message || "Couldn’t create your tailored interview."); 
+    }
     finally { setLoading(false); }
   };
   if (loading) return (
@@ -36,5 +56,127 @@ export default function InterviewPractice() {
     </div>
   );
   
-  return <section><p className="text-xs font-bold tracking-[0.14em] text-[#0057FF]">AI MOCK INTERVIEW</p><h1 className="mt-3 font-display text-4xl font-bold tracking-[-0.06em] sm:text-5xl">Practice like it&apos;s real.</h1><p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">Choose an interview style. Technical sessions adapt questions to your role, experience, and skills.</p><div className="mt-10 grid gap-4 md:grid-cols-3">{modes.map((item) => <button key={item} onClick={() => { setMode(item); setError(""); }} className={`rounded-2xl border p-5 text-left text-sm font-bold ${mode === item ? "border-[#0057FF] bg-[#EAF1FF] text-[#0057FF]" : "border-slate-200 bg-white text-slate-600"}`}>{item}</button>)}</div><article className="mt-6 rounded-[24px] border border-[#D8E5FF] bg-white p-6 sm:p-7">{mode === "Technical" ? <><p className="text-xs font-bold tracking-[0.13em] text-[#0057FF]">TECHNICAL PROFILE</p><h2 className="mt-2 font-display text-2xl font-bold">Tailor the technical round</h2><div className="mt-5 grid gap-5 sm:grid-cols-2"><label className="text-sm font-bold">Target role<input value={targetRole} onChange={(event) => setTargetRole(event.target.value)} maxLength={120} placeholder="e.g. React Developer Intern" className="mt-2 w-full rounded-xl border border-slate-200 bg-[#FBFAF8] p-3 text-sm font-normal outline-none focus:border-[#0057FF]" /></label><label className="text-sm font-bold">Experience level<select value={experienceLevel} onChange={(event) => setExperienceLevel(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-[#FBFAF8] p-3 text-sm font-normal outline-none focus:border-[#0057FF]">{["Student / Fresher", "Junior", "Mid-level", "Senior"].map((item) => <option key={item}>{item}</option>)}</select></label></div><label className="mt-5 block text-sm font-bold">Skills or topics <span className="font-medium text-slate-400">(optional)</span><input value={skills} onChange={(event) => setSkills(event.target.value)} maxLength={500} placeholder="e.g. React, JavaScript, REST APIs" className="mt-2 w-full rounded-xl border border-slate-200 bg-[#FBFAF8] p-3 text-sm font-normal outline-none focus:border-[#0057FF]" /></label></> : <><p className="text-xs font-bold tracking-[0.13em] text-[#0057FF]">{mode.toUpperCase()} SESSION</p><h2 className="mt-2 font-display text-2xl font-bold">Fifteen focused questions</h2><p className="mt-3 text-sm leading-6 text-slate-500">A structured {mode.toLowerCase()} session with complete feedback after your final answer.</p></>}<div className="mt-6 flex flex-wrap gap-2">{["Gentle", "Balanced", "Stretch"].map((item) => <button key={item} onClick={() => setDifficulty(item)} className={`rounded-full px-4 py-2 text-xs font-bold ${difficulty === item ? "bg-[#16213d] text-white" : "bg-slate-100 text-slate-500"}`}>{item}</button>)}</div>{error && <p className="mt-4 text-sm font-semibold text-[#C63D32]">{error}</p>}<button disabled={loading} onClick={begin} className="mt-7 rounded-xl bg-[#0057FF] px-5 py-3 text-sm font-bold text-white disabled:opacity-60">{loading ? "Creating your interview…" : mode === "Technical" ? "Create technical interview →" : "Start full interview →"}</button></article></section>;
+  return (
+    <section>
+      <p className="text-xs font-bold tracking-[0.14em] text-[#0057FF]">AI MOCK INTERVIEW</p>
+      <h1 className="mt-3 font-display text-4xl font-bold tracking-[-0.06em] sm:text-5xl">Practice like it&apos;s real.</h1>
+      <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">
+        Choose an interview style. Technical sessions adapt questions to your role, experience, and uploaded resume.
+      </p>
+
+      {hasResume === false && (
+        <div className="mt-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 text-amber-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">📄</span>
+            <div>
+              <h3 className="font-bold text-sm text-amber-950">Resume Required</h3>
+              <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
+                You must upload your resume in the <strong>Resume</strong> section before starting a mock interview.
+              </p>
+            </div>
+          </div>
+          <span className="shrink-0 text-xs font-bold px-4 py-2 rounded-xl bg-amber-800 text-white shadow-sm inline-block text-center">
+            Go to Resume tab above
+          </span>
+        </div>
+      )}
+
+      <div className="mt-8 grid gap-4 md:grid-cols-3">
+        {modes.map((item) => (
+          <button
+            key={item}
+            onClick={() => { setMode(item); setError(""); }}
+            className={`rounded-2xl border p-5 text-left text-sm font-bold transition-all ${
+              mode === item
+                ? "border-[#0057FF] bg-[#EAF1FF] text-[#0057FF] shadow-sm"
+                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+            }`}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      <article className="mt-6 rounded-[24px] border border-[#D8E5FF] bg-white p-6 sm:p-7 shadow-sm">
+        {mode === "Technical" ? (
+          <>
+            <p className="text-xs font-bold tracking-[0.13em] text-[#0057FF]">TECHNICAL PROFILE</p>
+            <h2 className="mt-2 font-display text-2xl font-bold text-[#131A2E]">Tailor the technical round</h2>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <label className="text-sm font-bold text-slate-700">
+                Target role
+                <input
+                  value={targetRole}
+                  onChange={(event) => setTargetRole(event.target.value)}
+                  maxLength={120}
+                  placeholder="e.g. React Developer Intern"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-[#FBFAF8] p-3 text-sm font-normal outline-none focus:border-[#0057FF]"
+                />
+              </label>
+              <label className="text-sm font-bold text-slate-700">
+                Experience level
+                <select
+                  value={experienceLevel}
+                  onChange={(event) => setExperienceLevel(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-[#FBFAF8] p-3 text-sm font-normal outline-none focus:border-[#0057FF]"
+                >
+                  {["Student / Fresher", "Junior", "Mid-level", "Senior"].map((item) => (
+                    <option key={item}>{item}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="mt-5 block text-sm font-bold text-slate-700">
+              Skills or topics <span className="font-medium text-slate-400">(optional)</span>
+              <input
+                value={skills}
+                onChange={(event) => setSkills(event.target.value)}
+                maxLength={500}
+                placeholder="e.g. React, JavaScript, REST APIs"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-[#FBFAF8] p-3 text-sm font-normal outline-none focus:border-[#0057FF]"
+              />
+            </label>
+          </>
+        ) : (
+          <>
+            <p className="text-xs font-bold tracking-[0.13em] text-[#0057FF]">{mode.toUpperCase()} SESSION</p>
+            <h2 className="mt-2 font-display text-2xl font-bold text-[#131A2E]">Fifteen focused questions</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              A structured {mode.toLowerCase()} session with complete, rigorous feedback after your final answer.
+            </p>
+          </>
+        )}
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          {["Gentle", "Balanced", "Stretch"].map((item) => (
+            <button
+              key={item}
+              onClick={() => setDifficulty(item)}
+              className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                difficulty === item ? "bg-[#16213d] text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        {error && <p className="mt-4 text-sm font-semibold text-[#C63D32] bg-red-50 p-3 rounded-xl border border-red-200">{error}</p>}
+
+        <button
+          disabled={loading || hasResume === false}
+          onClick={begin}
+          className="mt-7 rounded-xl bg-[#0057FF] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+        >
+          {loading
+            ? "Creating your interview…"
+            : hasResume === false
+            ? "Upload Resume to Unlock Interview"
+            : mode === "Technical"
+            ? "Create technical interview →"
+            : "Start full interview →"}
+        </button>
+      </article>
+    </section>
+  );
 }

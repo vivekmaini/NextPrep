@@ -9,6 +9,7 @@ import LiveMock from "./LiveMock";
 import Settings from "../Settings";
 import Support from "../Support";
 import Terms from "../Terms";
+import Privacy from "../Privacy";
 
 import { dashboardNav, NavIcons, UI, behavioralPrompts } from "./constants";
 import Overview from "./sections/Overview";
@@ -257,6 +258,7 @@ function DashboardContent() {
                         <button onClick={() => { setShowProfileMenu(false); setPage("Settings"); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${nightMode ? "text-slate-300 hover:bg-white/10" : "text-[#6B7280] hover:bg-[#EAEEFC] hover:text-[#3355E8]"}`}>Profile Settings</button>
                         <button onClick={() => { setShowProfileMenu(false); setPage("Support"); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${nightMode ? "text-slate-300 hover:bg-white/10" : "text-[#6B7280] hover:bg-[#EAEEFC] hover:text-[#3355E8]"}`}>Help & Support</button>
                         <button onClick={() => { setShowProfileMenu(false); setPage("Terms"); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${nightMode ? "text-slate-300 hover:bg-white/10" : "text-[#6B7280] hover:bg-[#EAEEFC] hover:text-[#3355E8]"}`}>Terms & Conditions</button>
+                        <button onClick={() => { setShowProfileMenu(false); setPage("Privacy"); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${nightMode ? "text-slate-300 hover:bg-white/10" : "text-[#6B7280] hover:bg-[#EAEEFC] hover:text-[#3355E8]"}`}>Privacy Policy</button>
                       </div>
                       <div className={`border-t p-2 ${nightMode ? "border-white/10" : "border-[#DCE3FA]/50"}`}>
                         <button onClick={() => { setShowProfileMenu(false); logout(); }} className={`flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-bold text-red-500 transition-colors ${nightMode ? "hover:bg-red-500/10" : "hover:bg-red-50"}`}>Log out</button>
@@ -280,14 +282,15 @@ function DashboardContent() {
             </div>
             
             {page === "Resume" ? <Resume /> : 
-             page === "Practice" ? <InterviewPractice /> : 
-             page === "Mock Interview" ? <LiveMock nightMode={nightMode} /> :
+             page === "Practice" ? <InterviewPractice setPage={setPage} /> : 
+             page === "Mock Interview" ? <LiveMock nightMode={nightMode} setPage={setPage} /> :
              page === "Coding" ? <Coding nightMode={nightMode} /> :
              page === "Progress" ? <Progress nightMode={nightMode} history={history} setPage={setPage} /> : 
              page === "Resources" ? <Resources nightMode={nightMode} setPage={setPage} /> : 
              page === "Settings" ? <Settings nightMode={nightMode} user={user} /> :
              page === "Support" ? <Support nightMode={nightMode} /> :
-             page === "Terms" ? <Terms nightMode={nightMode} /> : 
+             page === "Terms" ? <Terms nightMode={nightMode} isEmbedded={true} onNavigateTab={setPage} /> : 
+             page === "Privacy" ? <Privacy nightMode={nightMode} isEmbedded={true} onNavigateTab={setPage} /> : 
               <Overview 
                 firstName={firstName} answer={answer} setAnswer={setAnswer} result={result} checkAnswer={checkAnswer} isEvaluating={isEvaluating} 
                 nightMode={nightMode} behavioralPrompts={behavioralPrompts} promptIndex={promptIndex} cyclePrompt={cyclePrompt} 

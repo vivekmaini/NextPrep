@@ -1,66 +1,31 @@
 const { registerSchema } = require("../validators/authValidator");
 const authService = require("../services/authservice");
+const { getSafeErrorMessage } = require("../middlewares/errorHandler");
 
 const register = async (req, res) => {
   try {
     const { error } = registerSchema.validate(req.body);
-
     if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.details[0].message,
-      });
+      return res.status(400).json({ success: false, message: error.details[0].message });
     }
-
     const { fullName, email, password } = req.body;
-
-    const user = await authService.register(
-      fullName,
-      email,
-      password
-    );
-
-    res.status(201).json({
-      success: true,
-      message: "User Registered Successfully",
-      user,
-    });
-
+    const user = await authService.register(fullName, email, password);
+    res.status(201).json({ success: true, message: "User Registered Successfully", user });
   } catch (err) {
-
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-
+    const safeMsg = getSafeErrorMessage(err);
+    res.status(500).json({ success: false, message: safeMsg });
   }
 };
+
 const login = async (req, res) => {
-
-    try {
-
-        const { email, password } = req.body;
-
-        const data = await authService.login(
-            email,
-            password
-        );
-
-        res.status(200).json({
-            success: true,
-            message: "Login Successful",
-            ...data
-        });
-
-    } catch (err) {
-
-        res.status(401).json({
-            success: false,
-            message: err.message
-        });
-
-    }
-
+  try {
+    const { email, password } = req.body;
+    const data = await authService.login(email, password);
+    res.status(200).json({ success: true, message: "Login Successful", ...data });
+  } catch (err) {
+    const safeMsg = getSafeErrorMessage(err);
+    res.status(401).json({ success: false, message: safeMsg });
+  }
 };
 
 const verifyOtp = async (req, res) => {
@@ -72,7 +37,8 @@ const verifyOtp = async (req, res) => {
     const data = await authService.verifyOtp(email, otp);
     return res.status(200).json({ success: true, message: "Email verified successfully", ...data });
   } catch (err) {
-    return res.status(400).json({ success: false, message: err.message });
+    const safeMsg = getSafeErrorMessage(err);
+    return res.status(400).json({ success: false, message: safeMsg });
   }
 };
 
@@ -83,7 +49,8 @@ const resendOtp = async (req, res) => {
     await authService.resendOtp(email);
     return res.status(200).json({ success: true, message: "A new verification code has been sent." });
   } catch (err) {
-    return res.status(400).json({ success: false, message: err.message });
+    const safeMsg = getSafeErrorMessage(err);
+    return res.status(400).json({ success: false, message: safeMsg });
   }
 };
 
@@ -94,12 +61,10 @@ const forgotPassword = async (req, res) => {
       return res.status(400).json({ success: false, message: "Enter a valid email address." });
     }
     await authService.requestPasswordReset(email);
-    return res.status(200).json({
-      success: true,
-      message: "A password reset code has been sent.",
-    });
+    return res.status(200).json({ success: true, message: "A password reset code has been sent." });
   } catch (err) {
-    return res.status(400).json({ success: false, message: err.message || "Unable to request a password reset. Please try again." });
+    const safeMsg = getSafeErrorMessage(err);
+    return res.status(400).json({ success: false, message: safeMsg });
   }
 };
 
@@ -118,7 +83,8 @@ const resetPassword = async (req, res) => {
     await authService.resetPassword(email, otp, password);
     return res.status(200).json({ success: true, message: "Password reset successfully. You can now log in." });
   } catch (err) {
-    return res.status(400).json({ success: false, message: err.message });
+    const safeMsg = getSafeErrorMessage(err);
+    return res.status(400).json({ success: false, message: safeMsg });
   }
 };
 
@@ -131,7 +97,22 @@ const googleAuth = async (req, res) => {
     const data = await authService.googleAuth(credential);
     return res.status(200).json({ success: true, message: "Google sign-in successful", ...data });
   } catch (err) {
-    return res.status(401).json({ success: false, message: err.message });
+    const safeMsg = getSafeErrorMessage(err);
+    return res.status(401).json({ success: false, message: safeMsg });
+  }
+};
+
+const saveConsent = async (req, res) => {
+  try {
+    const { email, consent } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: "Email required" });
+    const pool = require("../config/db");
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS cookie_consent TEXT DEFAULT 'pending'`);
+    await pool.query(`UPDATE users SET cookie_consent = $1 WHERE email = $2`, [consent, email]);
+    return res.status(200).json({ success: true, message: "Consent saved to database" });
+  } catch (err) {
+    const safeMsg = getSafeErrorMessage(err);
+    return res.status(500).json({ success: false, message: safeMsg });
   }
 };
 
@@ -143,4 +124,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   googleAuth,
+  saveConsent,
 };

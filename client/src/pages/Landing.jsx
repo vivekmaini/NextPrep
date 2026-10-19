@@ -190,15 +190,23 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-white/10 bg-[#10173A] text-white">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-8 md:grid-cols-[1.4fr_0.6fr_0.6fr] lg:px-10">
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-8 md:grid-cols-[1.2fr_0.6fr_0.6fr_0.6fr] lg:px-10">
           <div>
             <Link to="/" className="inline-flex rounded-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300" aria-label="NextPrep home"><BrandLogo dark /></Link>
             <p className="mt-4 max-w-xs text-sm leading-6 text-slate-300">A focused home for students preparing for their next placement opportunity.</p>
           </div>
           <div><p className="text-xs font-bold tracking-[0.12em] text-blue-200">ACCOUNT</p><div className="mt-4 flex flex-col gap-3 text-sm text-slate-300"><Link to="/login" className="transition hover:text-white">Log in</Link><Link to="/register" className="transition hover:text-white">Create account</Link></div></div>
           <div><p className="text-xs font-bold tracking-[0.12em] text-blue-200">EXPLORE</p><div className="mt-4 flex flex-col gap-3 text-sm text-slate-300"><a href="#how-it-works" className="transition hover:text-white">How it works</a><Link to="/register" className="transition hover:text-white">Start preparing</Link></div></div>
+          <div><p className="text-xs font-bold tracking-[0.12em] text-blue-200">LEGAL</p><div className="mt-4 flex flex-col gap-3 text-sm text-slate-300"><Link to="/terms" className="transition hover:text-white">Terms of Service</Link><Link to="/privacy" className="transition hover:text-white">Privacy Policy</Link></div></div>
         </div>
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 border-t border-white/10 px-5 py-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10"><span>© {new Date().getFullYear()} NextPrep</span><span>Made for steady progress.</span></div>
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 border-t border-white/10 px-5 py-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
+          <span>© {new Date().getFullYear()} NextPrep. All rights reserved.</span>
+          <div className="flex items-center gap-3">
+            <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <span>•</span>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+          </div>
+        </div>
       </footer>
     </main>
   );

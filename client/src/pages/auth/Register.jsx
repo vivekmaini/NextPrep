@@ -168,6 +168,17 @@ export default function Register() {
         <Button type="submit" loading={loading} className="mt-2">
           Create account
         </Button>
+
+        <p className="mt-4 text-center text-xs text-slate-500 leading-relaxed">
+          By creating an account, you agree to our{" "}
+          <Link to="/terms" className="font-semibold text-[#3355E8] hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="font-semibold text-[#3355E8] hover:underline">
+            Privacy Policy
+          </Link>.
+        </p>
       </form>
     </AuthLayout>
   );

@@ -13,3 +13,8 @@ export const startInterview = async (payload) => {
   const { data } = await api.post("/interviews/start", payload);
   return data;
 };
+
+export const chatInterview = async (payload) => {
+  const { data } = await api.post("/interviews/chat", payload);
+  return data;
+};

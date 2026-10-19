@@ -62,4 +62,54 @@ const generateJson = async ({ systemPrompt, prompt, schema, temperature = 0.7 })
   return parseJsonResponse(textContent);
 };
 
-module.exports = { generateJson };
+/**
+ * Generates streaming/text chat responses through Groq Cloud API.
+ */
+const generateChatText = async ({ systemPrompt, messages, temperature = 0.4 }) => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error("GROQ_API_KEY is missing in your .env file. Please add it to deploy.");
+  }
+
+  const url = `https://api.groq.com/openai/v1/chat/completions`;
+
+  const formattedMessages = [
+    ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
+    ...messages.map((m) => ({
+      role: m.role === "ai" || m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user",
+      content: m.content || m.text || "",
+    })),
+  ];
+
+  let response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "qwen/qwen3.8-27b",
+        messages: formattedMessages,
+        temperature,
+        max_tokens: 700,
+      }),
+      signal: AbortSignal.timeout(30000),
+    });
+  } catch (cause) {
+    throw new Error(cause?.name === "TimeoutError" ? "Groq API timed out." : "Groq API is unreachable.");
+  }
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(`Groq AI Error: ${payload?.error?.message || "Request failed"}`);
+    error.statusCode = response.status >= 400 && response.status < 600 ? response.status : 502;
+    throw error;
+  }
+
+  return payload?.choices?.[0]?.message?.content || "";
+};
+
+module.exports = { generateJson, generateChatText };
