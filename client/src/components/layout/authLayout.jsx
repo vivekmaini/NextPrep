@@ -15,21 +15,16 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
           {/* Top Content */}
           <div className="relative z-20">
             <BrandLogo dark />
-            <div className="mt-8 lg:mt-10">
+            <div className="mt-8 lg:mt-9">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1 text-[10px] font-bold tracking-widest text-[#DCE3FA] backdrop-blur-md shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#3355E8] animate-pulse" /> CAREER PREP, SIMPLIFIED
               </span>
-              <h2 className="mt-4 font-hero text-[36px] sm:text-[40px] font-extrabold leading-[1.1] tracking-[-0.04em] text-white">
+              <h2 className="mt-4 font-hero text-[34px] sm:text-[38px] font-extrabold leading-[1.12] tracking-[-0.04em] text-white">
                 Master your <br/> next interview.
               </h2>
-              <p className="mt-3.5 text-sm leading-relaxed text-slate-300 max-w-[340px]">
+              <p className="mt-3 text-xs sm:text-sm leading-relaxed text-slate-300 max-w-[340px]">
                 Join top candidates preparing with curated DSA roadmaps, real-world system design questions, and AI mock interviews.
               </p>
-              <div className="mt-4 flex items-center gap-3 text-xs font-semibold text-slate-300">
-                <span className="inline-flex items-center gap-1.5"><span className="text-[#3355E8]">✓</span> Resume-Conditioned</span>
-                <span className="text-slate-600">•</span>
-                <span className="inline-flex items-center gap-1.5"><span className="text-[#3355E8]">✓</span> Real-Time ATS Score</span>
-              </div>
             </div>
           </div>
 
