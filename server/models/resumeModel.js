@@ -37,4 +37,9 @@ const getLatestResumeForUser = async (userId) => {
   return result.rows[0];
 };
 
-module.exports = { createResume, getLatestResumeForUser };
+const deleteResumesForUser = async (userId) => {
+  await ensureResumeTable();
+  await pool.query(`DELETE FROM resumes WHERE user_id = $1;`, [userId]);
+};
+
+module.exports = { createResume, getLatestResumeForUser, deleteResumesForUser };

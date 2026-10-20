@@ -13,5 +13,6 @@ const upload = multer({
 
 router.get("/latest", verifyToken, resumeController.getLatestResume);
 router.post("/upload", verifyToken, upload.single("resume"), resumeController.uploadResume);
+router.delete("/clear", verifyToken, resumeController.clearResumes);
 
 module.exports = router;

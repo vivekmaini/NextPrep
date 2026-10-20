@@ -22,4 +22,13 @@ const getLatestResume = async (req, res) => {
   }
 };
 
-module.exports = { uploadResume, getLatestResume };
+const clearResumes = async (req, res) => {
+  try {
+    await resumeService.deleteResumesForUser(req.user.id);
+    return res.status(200).json({ success: true, message: "Resume history cleared." });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Unable to clear resume history." });
+  }
+};
+
+module.exports = { uploadResume, getLatestResume, clearResumes };

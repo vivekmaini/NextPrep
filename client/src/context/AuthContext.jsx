@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import api from "../services/api";
 import {
   loginUser,
   registerUser,
@@ -75,8 +76,14 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    try {
+      api.delete("/resumes/clear").catch(() => {});
+    } catch {
+      // Ignore network errors on logout
+    }
     localStorage.removeItem(STORAGE_TOKEN_KEY);
     localStorage.removeItem(STORAGE_USER_KEY);
+    localStorage.removeItem("nextprep_user_resume");
     setToken(null);
     setUser(null);
   };

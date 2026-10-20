@@ -1,6 +1,6 @@
 const mammoth = require("mammoth");
 const { PDFParse } = require("pdf-parse");
-const { createResume, getLatestResumeForUser } = require("../models/resumeModel");
+const { createResume, getLatestResumeForUser, deleteResumesForUser } = require("../models/resumeModel");
 const { generateJson } = require("../ai/llm/localLLMService");
 const { analyseResumeDeterministically } = require("../ai/scoring/resumeScoringService");
 
@@ -107,4 +107,4 @@ const uploadAndAnalyse = async ({ userId, file, targetRole, jobDescription }) =>
   return { ...resume, wordCount: analysis.wordCount };
 };
 
-module.exports = { uploadAndAnalyse, getLatestResumeForUser };
+module.exports = { uploadAndAnalyse, getLatestResumeForUser, deleteResumesForUser };

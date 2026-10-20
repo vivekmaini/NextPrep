@@ -16,6 +16,7 @@ const {
   removePasswordReset,
   updateUserPassword,
 } = require("../models/userModel");
+const { deleteResumesForUser } = require("../models/resumeModel");
 const { sendVerificationEmail, sendPasswordResetEmail } = require("./emailService");
 
 const OTP_LENGTH = 6;
@@ -92,6 +93,13 @@ const login = async (email, password) => {
     throw new Error("Please verify your email before logging in");
   }
 
+  // Clear previous resume history on fresh login so user uploads fresh resume every session
+  try {
+    await deleteResumesForUser(user.id);
+  } catch (err) {
+    console.error("Failed to clear resume history on login:", err?.message);
+  }
+
   return createSession(user);
 };
 
@@ -116,6 +124,13 @@ const verifyOtp = async (email, otp) => {
   await removeEmailVerification(normalizedEmail);
   const user = await getUserByEmail(normalizedEmail);
   if (!user) throw new Error("User not found");
+
+  // Clear previous resume history on fresh login
+  try {
+    await deleteResumesForUser(user.id);
+  } catch (err) {
+    console.error("Failed to clear resume history on OTP verify:", err?.message);
+  }
 
   return createSession(user);
 };
@@ -185,6 +200,14 @@ const googleAuth = async (credential) => {
 
   // A Google-verified email does not need a separate OTP verification.
   await removeEmailVerification(email);
+
+  // Clear previous resume history on fresh login
+  try {
+    await deleteResumesForUser(user.id);
+  } catch (err) {
+    console.error("Failed to clear resume history on Google sign-in:", err?.message);
+  }
+
   return createSession(user);
 };
 
