@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-export default function Resources({ nightMode, setPage }) {
+export default function Resources({ nightMode }) {
   const [selectedResource, setSelectedResource] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
 

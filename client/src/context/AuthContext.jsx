@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import api from "../services/api";
 import {
   loginUser,
@@ -14,26 +14,18 @@ const STORAGE_TOKEN_KEY = "token";
 const STORAGE_USER_KEY = "user";
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  // true only while we're restoring a session from localStorage on first load
-  const [initializing, setInitializing] = useState(true);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem(STORAGE_TOKEN_KEY);
-    const storedUser = localStorage.getItem(STORAGE_USER_KEY);
-
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem(STORAGE_TOKEN_KEY);
-        localStorage.removeItem(STORAGE_USER_KEY);
-      }
+  const [token, setToken] = useState(() => localStorage.getItem(STORAGE_TOKEN_KEY));
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_USER_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      localStorage.removeItem(STORAGE_TOKEN_KEY);
+      localStorage.removeItem(STORAGE_USER_KEY);
+      return null;
     }
-    setInitializing(false);
-  }, []);
+  });
+  const [initializing] = useState(false);
 
   const persistSession = (nextToken, nextUser) => {
     localStorage.setItem(STORAGE_TOKEN_KEY, nextToken);
@@ -105,6 +97,7 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

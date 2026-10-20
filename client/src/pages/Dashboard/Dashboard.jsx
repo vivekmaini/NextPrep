@@ -3,7 +3,6 @@ import { Navigate } from "react-router-dom";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import BrandLogo from "../../components/ui/BrandLogo";
-import MountainIllustration from "../../components/ui/MountainIllustration";
 import Resume from "../resume/Resume";
 import InterviewPractice from "../interview/InterviewPractice";
 import LiveMock from "./LiveMock";
@@ -12,7 +11,7 @@ import Support from "../Support";
 import Terms from "../Terms";
 import Privacy from "../Privacy";
 
-import { dashboardNav, NavIcons, UI, behavioralPrompts } from "./constants";
+import { dashboardNav, NavIcons, behavioralPrompts } from "./constants";
 import Overview from "./sections/Overview";
 import Progress from "./sections/Progress";
 import Resources from "./sections/Resources";
@@ -305,7 +304,7 @@ class ErrorBoundary extends React.Component {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
   }
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
   componentDidCatch(error, errorInfo) {

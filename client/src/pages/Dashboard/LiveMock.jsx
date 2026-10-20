@@ -144,7 +144,6 @@ export default function LiveMock({ nightMode, setPage }) {
       setChatHistory(prev => [...prev, { role: "assistant", content: aiFullResponse }]);
 
       // API: Save Q&A pair to DB
-      const currentToken = localStorage.getItem("token");
       let lastAiQuestion = "Please ask your first question based on my resume.";
       if (updatedHistory.length >= 3) {
          lastAiQuestion = updatedHistory[updatedHistory.length - 2].content;

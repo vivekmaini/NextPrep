@@ -1,7 +1,3 @@
-import React, { useState, useEffect } from "react";
-import MountainIllustration from "../../../components/ui/MountainIllustration";
-import { NavIcons, UI, behavioralPrompts } from "../constants";
-
 export default function Coding({ nightMode }) {
   const topics = [
   {

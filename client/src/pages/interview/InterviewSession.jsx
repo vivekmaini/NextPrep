@@ -26,8 +26,6 @@ export default function InterviewSession() {
   const [retryTrigger, setRetryTrigger] = useState(0);
   const [feedback, setFeedback] = useState(null);
   const [error, setError] = useState("");
-  
-
 
   // Fast background question loader (fetches all remaining questions in 1 fast call)
   useEffect(() => {
@@ -60,7 +58,7 @@ export default function InterviewSession() {
       };
       fetchMore();
     }
-  }, [questions.length, mode, difficulty, targetRole, experienceLevel, skills, retryTrigger]);
+  }, [questions, mode, difficulty, targetRole, experienceLevel, skills, retryTrigger]);
 
   // Auto-focus textarea on question change
   useEffect(() => {

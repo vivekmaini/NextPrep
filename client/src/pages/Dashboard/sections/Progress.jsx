@@ -1,7 +1,3 @@
-import React, { useState, useEffect } from "react";
-import MountainIllustration from "../../../components/ui/MountainIllustration";
-import { NavIcons, UI, behavioralPrompts } from "../constants";
-
 export default function Progress({ nightMode, history, setPage }) {
   const avgScore = history.length > 0 ? Math.round(history.reduce((a, b) => a + b.score, 0) / history.length) : 0;
   

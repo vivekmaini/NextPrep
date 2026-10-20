@@ -24,12 +24,12 @@ export default function Resume() {
   }, []);
 
   useEffect(() => {
-    if (!uploading) {
-      setLoadingStep(0);
-      return undefined;
-    }
+    if (!uploading) return undefined;
     const timer = window.setInterval(() => setLoadingStep((step) => Math.min(step + 1, 3)), 1400);
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearInterval(timer);
+      setLoadingStep(0);
+    };
   }, [uploading]);
 
   useEffect(() => {
@@ -44,10 +44,9 @@ export default function Resume() {
       setAnimatedScore(Math.round(finalScore * eased));
       if (progress < 1) frame = requestAnimationFrame(animate);
     };
-    setAnimatedScore(0);
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [resume?.id, resume?.ats_score, loading, uploading]);
+  }, [resume, loading, uploading]);
 
   const chooseFile = (nextFile) => {
     setError("");
@@ -71,6 +70,7 @@ export default function Resume() {
     if (!file) return setError("Choose your resume before analysing it.");
     setError("");
     setAnimatedScore(0);
+    setLoadingStep(0);
     setUploading(true);
     try {
       const data = await uploadResume({ file, targetRole, jobDescription });

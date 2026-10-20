@@ -1,5 +1,3 @@
-import React from "react";
-
 export const dashboardNav = ["Overview", "Resume", "Practice", "Mock Interview", "Coding", "Progress", "Resources"];
 
 export const NavIcons = {

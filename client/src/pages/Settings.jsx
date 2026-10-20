@@ -1,31 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Settings({ nightMode, user }) {
-  const navigate = useNavigate();
   const { updateUser } = useAuth();
   
-  const [profile, setProfile] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "Software Engineer",
-    portfolio: ""
+  const [profile, setProfile] = useState(() => {
+    try {
+      const storedProfile = JSON.parse(localStorage.getItem("nextprep-profile") || "{}");
+      return {
+        firstName: storedProfile.firstName || user?.firstName || "Vivek",
+        lastName: storedProfile.lastName || user?.lastName || "Maini",
+        email: storedProfile.email || user?.email || "vivek@example.com",
+        role: storedProfile.role || "Software Engineer",
+        portfolio: storedProfile.portfolio || ""
+      };
+    } catch {
+      return {
+        firstName: user?.firstName || "Vivek",
+        lastName: user?.lastName || "Maini",
+        email: user?.email || "vivek@example.com",
+        role: "Software Engineer",
+        portfolio: ""
+      };
+    }
   });
   const [isSaved, setIsSaved] = useState(false);
-
-  useEffect(() => {
-    // Load from local storage
-    const storedProfile = JSON.parse(localStorage.getItem("nextprep-profile") || "{}");
-    setProfile({
-      firstName: storedProfile.firstName || user?.firstName || "Vivek",
-      lastName: storedProfile.lastName || user?.lastName || "Maini",
-      email: storedProfile.email || user?.email || "vivek@example.com",
-      role: storedProfile.role || "Software Engineer",
-      portfolio: storedProfile.portfolio || ""
-    });
-  }, [user]);
 
   const handleSave = (e) => {
     e.preventDefault();
