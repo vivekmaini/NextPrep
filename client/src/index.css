@@ -421,7 +421,7 @@ html {
   right: -4%;
   bottom: -45px;
   left: -4%;
-  opacity: 0.95;
+  opacity: 0.35;
   pointer-events: none;
   mask-image: linear-gradient(to bottom, transparent 0%, black 12%);
 }
