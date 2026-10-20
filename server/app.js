@@ -14,6 +14,13 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/interviews", interviewRoutes);
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "NextPrep Backend is Running",
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,

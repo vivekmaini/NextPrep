@@ -1,7 +1,7 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-const poolConfig = process.env.DATABASE_URL
+const baseConfig = process.env.DATABASE_URL
   ? {
       connectionString: process.env.DATABASE_URL,
       ssl: process.env.DB_SSL === "false" ? false : { rejectUnauthorized: false },
@@ -15,7 +15,19 @@ const poolConfig = process.env.DATABASE_URL
       ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
     };
 
+const poolConfig = {
+  ...baseConfig,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+};
+
 const pool = new Pool(poolConfig);
+
+// Safety net: Prevent unexpected idle connection resets from crashing the Node.js server
+pool.on("error", (err) => {
+  console.warn("[PostgreSQL] Idle client warning (auto-reconnecting):", err?.message || err);
+});
 
 pool
   .connect()
