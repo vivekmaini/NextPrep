@@ -2,8 +2,8 @@
 const interviewService = require("../services/interviewService");
 const InterviewModel = require("../models/interviewModel");
 const { getSafeErrorMessage } = require("../middlewares/errorHandler");
-
 const resumeModel = require("../models/resumeModel");
+const pool = require("../config/db");
 
 const startInterview = async (req, res) => {
   try {
@@ -84,19 +84,29 @@ const saveQA = async (req, res) => {
 
 const completeInterview = async (req, res) => {
   try {
+    const userId = req.user?.id || req.user?.userId;
     let feedback = null;
     if (req.body.responses) {
-        feedback = await interviewService.evaluateSession(req.body);
+      feedback = await interviewService.evaluateSession(req.body);
     }
 
-    const { interviewId, overallScore, finalAnalysis } = req.body;
+    let { interviewId, overallScore, finalAnalysis } = req.body;
     let interview = null;
-    if (interviewId || feedback) {
-        const scoreToSave = overallScore || (feedback ? feedback.overallScore : 0);
-        const analysisToSave = finalAnalysis || (feedback ? feedback.summary : "");
-        if (interviewId) {
-            interview = await InterviewModel.finishInterview(interviewId, scoreToSave, analysisToSave);
-        }
+    const scoreToSave = overallScore || (feedback ? feedback.overallScore : 75);
+    const analysisToSave = finalAnalysis || (feedback ? feedback.summary : "Interview completed successfully.");
+
+    if (!interviewId && userId) {
+      const ongoing = await pool.query(
+        "SELECT id FROM interviews WHERE user_id = $1 AND status = 'ongoing' ORDER BY created_at DESC LIMIT 1",
+        [userId]
+      );
+      if (ongoing.rows.length > 0) {
+        interviewId = ongoing.rows[0].id;
+      }
+    }
+
+    if (interviewId) {
+      interview = await InterviewModel.finishInterview(interviewId, scoreToSave, analysisToSave);
     }
 
     res.status(200).json({ success: true, interview, feedback });

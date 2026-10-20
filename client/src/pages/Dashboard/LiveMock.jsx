@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import api from "../../services/api";
-import { chatInterview } from "../../services/interviewService";
+import { chatInterview, completeInterview } from "../../services/interviewService";
 import { getLatestResume } from "../../services/resumeService";
 
 export default function LiveMock({ nightMode, setPage }) {
@@ -9,6 +9,8 @@ export default function LiveMock({ nightMode, setPage }) {
   const [hasUploadedResume, setHasUploadedResume] = useState(false);
   const [showResumeDisclaimer, setShowResumeDisclaimer] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
+  const [mockFeedback, setMockFeedback] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
@@ -186,6 +188,141 @@ export default function LiveMock({ nightMode, setPage }) {
       handleSend();
     }
   };
+
+  const handleEndSession = async () => {
+    const userAnswers = [];
+    for (let i = 0; i < chatHistory.length; i++) {
+      if (chatHistory[i].role === "user") {
+        const prevAi = i > 0 && chatHistory[i - 1].role === "assistant" ? chatHistory[i - 1].content : "Initial Question";
+        userAnswers.push({ question: prevAi, answer: chatHistory[i].content });
+      }
+    }
+
+    if (userAnswers.length === 0) {
+      setIsStarted(false);
+      setMessages([]);
+      setChatHistory([]);
+      return;
+    }
+
+    setIsFinishing(true);
+    try {
+      const data = await completeInterview({
+        interviewId: dbInterviewId,
+        mode: interviewType,
+        difficulty,
+        targetRole: role,
+        responses: userAnswers,
+      });
+
+      if (data?.feedback) {
+        setMockFeedback(data.feedback);
+        const newEntry = {
+          id: `db-${dbInterviewId || Date.now()}`,
+          title: role ? `${interviewType}: ${role}` : `${interviewType} Interview`,
+          detail: interviewType,
+          date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          score: data.feedback.overallScore || 78
+        };
+        const curLocal = JSON.parse(localStorage.getItem("nextprep-history") || "[]");
+        localStorage.setItem("nextprep-history", JSON.stringify([newEntry, ...curLocal].slice(0, 30)));
+      } else {
+        setIsStarted(false);
+      }
+    } catch (e) {
+      console.error("Failed to evaluate mock session:", e);
+      setIsStarted(false);
+    } finally {
+      setIsFinishing(false);
+    }
+  };
+
+  if (mockFeedback) {
+    return (
+      <section className="pb-12 max-w-4xl mx-auto animate-in fade-in duration-300">
+        <div className={`rounded-[32px] border p-8 sm:p-12 shadow-soft ${nightMode ? "border-white/10 bg-[#10173A]" : "border-[#DCE3FA] bg-white"}`}>
+          <div className="text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-[11px] font-extrabold tracking-widest text-[#0057FF] uppercase shadow-sm">
+              Mock Interview Evaluated
+            </span>
+            <div className="mt-8 flex items-baseline justify-center gap-1">
+              <span className={`font-hero text-7xl sm:text-8xl font-bold tracking-tight ${nightMode ? "text-white" : "text-[#131A2E]"}`}>
+                {mockFeedback.overallScore}
+              </span>
+              <span className="text-2xl font-bold text-slate-400">/100</span>
+            </div>
+            <p className={`mt-5 max-w-2xl mx-auto text-base leading-relaxed ${nightMode ? "text-slate-300" : "text-slate-600"}`}>
+              {mockFeedback.summary}
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <div className={`rounded-2xl border p-6 ${nightMode ? "border-emerald-500/20 bg-emerald-500/5" : "border-emerald-100 bg-emerald-50/50"}`}>
+              <h3 className="font-bold text-emerald-600 flex items-center gap-2 text-sm uppercase tracking-wider">
+                <span>✦</span> Strengths Observed
+              </h3>
+              <ul className="mt-4 space-y-3">
+                {mockFeedback.strengths?.length > 0 ? (
+                  mockFeedback.strengths.map((item, idx) => (
+                    <li key={idx} className={`text-sm leading-relaxed ${nightMode ? "text-slate-300" : "text-slate-700"}`}>
+                      • {item}
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm italic text-slate-400">Answer more questions in depth for detailed strengths.</li>
+                )}
+              </ul>
+            </div>
+
+            <div className={`rounded-2xl border p-6 ${nightMode ? "border-blue-500/20 bg-blue-500/5" : "border-blue-100 bg-blue-50/50"}`}>
+              <h3 className="font-bold text-[#0057FF] flex items-center gap-2 text-sm uppercase tracking-wider">
+                <span>→</span> Areas to Improve
+              </h3>
+              <ul className="mt-4 space-y-3">
+                {mockFeedback.improvements?.length > 0 ? (
+                  mockFeedback.improvements.map((item, idx) => (
+                    <li key={idx} className={`text-sm leading-relaxed ${nightMode ? "text-slate-300" : "text-slate-700"}`}>
+                      • {item}
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm italic text-slate-400">Provide longer, structured answers with real examples.</li>
+                )}
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+            {setPage && (
+              <button
+                onClick={() => {
+                  setMockFeedback(null);
+                  setIsStarted(false);
+                  setMessages([]);
+                  setChatHistory([]);
+                  setPage("Progress");
+                }}
+                className="rounded-2xl bg-[#3355E8] px-8 py-4 text-sm font-bold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all text-center"
+              >
+                View Full Progress & Analytics →
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setMockFeedback(null);
+                setIsStarted(false);
+                setMessages([]);
+                setChatHistory([]);
+              }}
+              className={`rounded-2xl border px-8 py-4 text-sm font-bold transition-all ${nightMode ? "border-white/10 text-slate-300 hover:bg-white/5" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+            >
+              Start New Mock Interview
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (!isStarted) {
     return (
@@ -365,12 +502,25 @@ export default function LiveMock({ nightMode, setPage }) {
           </p>
         </div>
         <button 
-          onClick={() => setIsStarted(false)}
+          onClick={handleEndSession}
+          disabled={isFinishing}
           className={`text-xs font-bold px-4 py-2 rounded-full transition-all ${nightMode ? "bg-white/10 hover:bg-white/20 text-white" : "bg-white border border-[#DCE3FA] text-[#131A2E] hover:bg-slate-50 shadow-sm"}`}
         >
-          End Session
+          {isFinishing ? "Evaluating..." : "End Session"}
         </button>
       </div>
+
+      {isFinishing && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#F4F7FC]/80 backdrop-blur-xl">
+          <div className="relative flex h-24 w-24 items-center justify-center mb-8">
+            <div className="absolute inset-0 rounded-full border-[3px] border-white/10"></div>
+            <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#0057FF] border-r-indigo-400 animate-spin"></div>
+            <svg className="w-8 h-8 text-blue-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+          </div>
+          <h2 className="relative z-10 font-hero text-3xl font-bold tracking-tight text-[#131A2E]">Analyzing Your Performance</h2>
+          <p className="relative z-10 mt-3 text-sm text-slate-500">Evaluating your answers and generating your real interview score...</p>
+        </div>
+      )}
 
       <div className={`flex-1 overflow-hidden flex flex-col rounded-[28px] border shadow-soft ${nightMode ? "border-white/10 bg-[#10173A]/50" : "border-[#DCE3FA] bg-white"}`}>
         <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">

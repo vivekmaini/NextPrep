@@ -38,13 +38,15 @@ function DashboardContent() {
           // Format DB data for the frontend Activity view
           const dbHistory = data.history.map(item => {
             const dateStr = new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-            const title = item.mode === "Technical" && item.target_role ? `Technical: ${item.target_role}` : `${item.mode || "Mock"} Interview`;
+            const type = item.interview_type || item.mode || "Technical";
+            const roleName = item.role && item.role !== "Behavioral" && item.role !== "Technical" && item.role !== "HR round" ? item.role : (item.target_role || "");
+            const title = roleName ? `${type}: ${roleName}` : `${type} Interview`;
             return {
               id: `db-${item.id}`,
               title: title,
               date: dateStr,
-              detail: item.mode || "Behavioral",
-              score: item.overall_score || 0
+              detail: type,
+              score: item.overall_score || 75
             };
           });
           
@@ -63,7 +65,7 @@ function DashboardContent() {
     };
     
     fetchHistory();
-  }, []);
+  }, [page]);
   const [dailyMinutes, setDailyMinutes] = useState(() => parseInt(localStorage.getItem("nextprep-minutes") || "0"));
   const [milestone, setMilestone] = useState(() => {
     const saved = localStorage.getItem("nextprep-milestone");

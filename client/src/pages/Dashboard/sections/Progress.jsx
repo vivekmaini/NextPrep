@@ -1,12 +1,18 @@
 export default function Progress({ nightMode, history, setPage }) {
-  const avgScore = history.length > 0 ? Math.round(history.reduce((a, b) => a + b.score, 0) / history.length) : 0;
+  const evaluatedSessions = history.filter(h => (h.score || 0) > 0);
+  const avgScore = evaluatedSessions.length > 0 
+    ? Math.round(evaluatedSessions.reduce((a, b) => a + b.score, 0) / evaluatedSessions.length) 
+    : 0;
   
   const getCategoryStats = (keywords) => {
     const categoryInterviews = history.filter(h => 
       keywords.some(kw => (h.detail || "").toLowerCase().includes(kw) || (h.title || "").toLowerCase().includes(kw))
     );
     if (categoryInterviews.length === 0) return { text: "Not started yet", score: 0 };
-    const avg = Math.round(categoryInterviews.reduce((a, b) => a + b.score, 0) / categoryInterviews.length);
+    const withScores = categoryInterviews.filter(h => (h.score || 0) > 0);
+    const avg = withScores.length > 0
+      ? Math.round(withScores.reduce((a, b) => a + b.score, 0) / withScores.length)
+      : 75;
     return { text: `${categoryInterviews.length} sessions evaluated`, score: avg };
   };
 

@@ -5,10 +5,21 @@ import { NavIcons, UI } from "../constants";
 export default function Overview({ firstName, answer, setAnswer, result, checkAnswer, nightMode, behavioralPrompts, promptIndex, cyclePrompt, history, dailyMinutes, milestone, updateMilestone, setPage }) {
   const [showMockMenu, setShowMockMenu] = useState(false);
   
-  const behavioralHistory = history.filter(h => h.detail.includes("Behavioral"));
-  const avgBehavioralScore = behavioralHistory.length > 0 
-    ? Math.round(behavioralHistory.reduce((acc, curr) => acc + curr.score, 0) / behavioralHistory.length) 
-    : 0;
+  const getCategoryAvg = (keywords) => {
+    const list = history.filter(h => 
+      keywords.some(kw => (h.detail || "").toLowerCase().includes(kw) || (h.title || "").toLowerCase().includes(kw))
+    );
+    if (list.length === 0) return { score: 0, text: "No data" };
+    const withScores = list.filter(h => (h.score || 0) > 0);
+    const avg = withScores.length > 0
+      ? Math.round(withScores.reduce((acc, curr) => acc + curr.score, 0) / withScores.length)
+      : 75;
+    return { score: avg, text: "" };
+  };
+
+  const sysDesign = getCategoryAvg(["system design", "architecture"]);
+  const techDesign = getCategoryAvg(["technical", "algorithm", "dsa", "coding"]);
+  const behavioral = getCategoryAvg(["behavioral", "hr round", "hr"]);
 
   const progressPercent = Math.min(100, Math.round((dailyMinutes / 50) * 100));
   const daysLeft = Math.max(0, Math.ceil((new Date(milestone.date) - new Date()) / (1000 * 60 * 60 * 24)));
@@ -85,7 +96,7 @@ export default function Overview({ firstName, answer, setAnswer, result, checkAn
         <p className={`text-xs mt-1 mb-4 ${nightMode ? "text-slate-500" : "text-slate-400"}`}>Scores based on your recent practice history.</p>
         
         <div className="mt-4 space-y-4 sm:mt-5 sm:space-y-5">
-          {[["System Design", 0, "No data"], ["Algorithms", 0, "No data"], ["Behavioral", avgBehavioralScore, avgBehavioralScore > 0 ? "" : "Try quick practice"]].map(([label, value, emptyMsg]) => (
+          {[["System Design", sysDesign.score, sysDesign.text], ["Technical & Coding", techDesign.score, techDesign.text], ["Behavioral & HR", behavioral.score, behavioral.text]].map(([label, value, emptyMsg]) => (
             <div key={label}>
               <div className="flex justify-between text-sm">
                 <span className={`font-bold ${nightMode ? "text-slate-200" : "text-[#131A2E]"}`}>{label} {emptyMsg && <span className="font-normal text-[10px] ml-2 text-slate-400">({emptyMsg})</span>}</span>

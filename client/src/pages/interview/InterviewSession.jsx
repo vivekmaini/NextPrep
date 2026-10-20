@@ -13,7 +13,7 @@ export default function InterviewSession() {
   const { isAuthenticated, initializing } = useAuth();
   const location = useLocation(); 
   const navigate = useNavigate();
-  const { mode = "Behavioral", difficulty = "Balanced", targetRole = "", experienceLevel = "", skills = "", questions: tailoredQuestions } = location.state || {};
+  const { interviewId, mode = "Behavioral", difficulty = "Balanced", targetRole = "", experienceLevel = "", skills = "", questions: tailoredQuestions } = location.state || {};
   
   const [questions, setQuestions] = useState(tailoredQuestions?.length > 0 ? tailoredQuestions : questionSets[mode] || questionSets.Behavioral);
   const isFetching = useRef(false);
@@ -152,7 +152,7 @@ export default function InterviewSession() {
     
     setLoading(true); 
     try { 
-      const data = await completeInterview({ mode, difficulty, targetRole, experienceLevel, skills, responses: finalResponses }); 
+      const data = await completeInterview({ interviewId, mode, difficulty, targetRole, experienceLevel, skills, responses: finalResponses }); 
       setFeedback(data.feedback); 
     } catch (requestError) { 
       setError(requestError.message || "Couldn’t finish the interview review."); 

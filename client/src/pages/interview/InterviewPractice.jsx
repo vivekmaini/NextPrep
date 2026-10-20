@@ -19,7 +19,7 @@ export default function InterviewPractice() {
     setLoading(true); setError("");
     try { 
       const data = await startInterview({ mode, difficulty, targetRole: targetRole.trim(), experienceLevel, skills: skills.trim(), count: 2 }); 
-      navigate("/interview", { state: { mode, difficulty, targetRole: targetRole.trim(), experienceLevel, skills: skills.trim(), questions: data.questions } }); 
+      navigate("/interview", { state: { interviewId: data.interview?.id, mode, difficulty, targetRole: targetRole.trim(), experienceLevel, skills: skills.trim(), questions: data.questions } }); 
     }
     catch (requestError) { 
       setError(requestError.message || "Couldn’t create your tailored interview."); 
