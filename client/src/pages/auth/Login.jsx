@@ -90,13 +90,13 @@ export default function Login() {
       {formError && (
         <div
           role="alert"
-          className="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600"
+          className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-red-600"
         >
           {formError}
         </div>
       )}
       {location.state?.passwordReset && (
-        <div className="mb-5 rounded-md border border-[#A8E6CF] bg-[#F2FBF7] px-4 py-3 text-sm font-medium text-[#1F7A5C]">
+        <div className="mb-3 rounded-xl border border-[#A8E6CF] bg-[#F2FBF7] px-3.5 py-2.5 text-xs sm:text-sm font-medium text-[#1F7A5C]">
           Your password was reset. Log in with your new password.
         </div>
       )}
@@ -104,7 +104,7 @@ export default function Login() {
       <GoogleButton onError={setFormError} />
       <OrDivider />
 
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
         <Input
           id="email"
           name="email"
@@ -115,6 +115,7 @@ export default function Login() {
           onChange={handleChange}
           error={fieldErrors.email}
           autoComplete="email"
+          compact
         />
         <Input
           id="password"
@@ -126,15 +127,16 @@ export default function Login() {
           onChange={handleChange}
           error={fieldErrors.password}
           autoComplete="current-password"
+          compact
         />
 
         <div className="-mt-1 text-right">
-          <Link to="/forgot-password" className="text-sm font-semibold text-[#0057FF] hover:underline">
+          <Link to="/forgot-password" className="text-xs font-semibold text-[#0057FF] hover:underline">
             Forgot password?
           </Link>
         </div>
 
-        <Button type="submit" loading={loading} className="mt-2">
+        <Button type="submit" loading={loading} size="compact" className="mt-1">
           Log in
         </Button>
       </form>

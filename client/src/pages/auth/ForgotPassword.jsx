@@ -39,10 +39,10 @@ export default function ForgotPassword() {
       subtitle="Enter the email address associated with your account and we’ll send a six-digit reset code."
       footer={<><Link to="/login" className="font-semibold text-[#0057FF] hover:underline">Back to log in</Link></>}
     >
-      {error && <div role="alert" className="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">{error}</div>}
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-        <Input id="email" name="email" type="email" label="Email" placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
-        <Button type="submit" loading={loading} className="mt-2">Send reset code</Button>
+      {error && <div role="alert" className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-red-600">{error}</div>}
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+        <Input id="email" name="email" type="email" label="Email" placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" compact />
+        <Button type="submit" loading={loading} size="compact" className="mt-1">Send reset code</Button>
       </form>
     </AuthLayout>
   );

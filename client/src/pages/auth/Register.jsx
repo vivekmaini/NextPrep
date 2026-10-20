@@ -110,7 +110,7 @@ export default function Register() {
       {formError && (
         <div
           role="alert"
-          className="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600"
+          className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-red-600"
         >
           {formError}
         </div>
@@ -120,59 +120,68 @@ export default function Register() {
       <OrDivider />
 
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-2.5">
-        <Input
-          id="name"
-          name="name"
-          type="text"
-          label="Full name"
-          placeholder="Enter Full Name"
-          value={form.name}
-          onChange={handleChange}
-          error={fieldErrors.name}
-          autoComplete="name"
-        />
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          label="Email"
-          placeholder="Enter Your Email"
-          value={form.email}
-          onChange={handleChange}
-          error={fieldErrors.email}
-          autoComplete="email"
-        />
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          label="Password"
-          placeholder="Enter Password"
-          value={form.password}
-          onChange={handleChange}
-          error={fieldErrors.password}
-          autoComplete="new-password"
-        />
-        <Input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          label="Confirm password"
-          placeholder="Re-Enter Your Password"
-          value={form.confirmPassword}
-          onChange={handleChange}
-          error={fieldErrors.confirmPassword}
-          autoComplete="new-password"
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <Input
+            id="name"
+            name="name"
+            type="text"
+            label="Full name"
+            placeholder="Alex Kumar"
+            value={form.name}
+            onChange={handleChange}
+            error={fieldErrors.name}
+            autoComplete="name"
+            compact
+          />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            label="Email"
+            placeholder="you@example.com"
+            value={form.email}
+            onChange={handleChange}
+            error={fieldErrors.email}
+            autoComplete="email"
+            compact
+          />
+        </div>
 
-        <Button type="submit" loading={loading} className="mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            label="Password"
+            placeholder="Min 8 chars"
+            value={form.password}
+            onChange={handleChange}
+            error={fieldErrors.password}
+            autoComplete="new-password"
+            compact
+          />
+          <Input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            label="Confirm password"
+            placeholder="Re-enter password"
+            value={form.confirmPassword}
+            onChange={handleChange}
+            error={fieldErrors.confirmPassword}
+            autoComplete="new-password"
+            compact
+          />
+        </div>
+
+        <Button type="submit" loading={loading} size="compact" className="mt-1">
           Create account
         </Button>
 
-        <p className="mt-4 text-center text-xs text-slate-500 leading-relaxed">
-          By creating an account, you agree to our{" "}
+        <p className="mt-2 text-center text-[11px] text-slate-500 leading-normal">
+          By signing up, you agree to our{" "}
           <Link to="/terms" className="font-semibold text-[#3355E8] hover:underline">
-            Terms of Service
+            Terms
           </Link>{" "}
           and{" "}
           <Link to="/privacy" className="font-semibold text-[#3355E8] hover:underline">
