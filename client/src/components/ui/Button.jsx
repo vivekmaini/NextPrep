@@ -14,25 +14,18 @@ export default function Button({
   children,
   type = "button",
   variant = "primary",
-  size = "md",
   loading = false,
   disabled = false,
   className = "",
   ...rest
 }) {
   const isDisabled = disabled || loading;
-  const sizeClasses =
-    size === "compact"
-      ? "px-4 py-2.5 text-sm"
-      : size === "sm"
-      ? "px-3 py-1.5 text-xs"
-      : "px-4 py-2.5 sm:py-3 text-sm";
 
   return (
     <button
       type={type}
       disabled={isDisabled}
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl ${sizeClasses} font-semibold
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold
         transition duration-200 ease-out focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2
         disabled:cursor-not-allowed ${VARIANT_CLASSES[variant]} ${className}`}
       {...rest}

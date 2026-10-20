@@ -46,14 +46,12 @@ export default function ResetPassword() {
       subtitle={<>Enter the code sent to <span className="font-semibold text-slate-700">{email}</span>, then choose a new password.</>}
       footer={<>Didn&apos;t receive a code? <Link to="/forgot-password" className="font-semibold text-[#0057FF] hover:underline">Send another</Link></>}
     >
-      {error && <div role="alert" className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-red-600">{error}</div>}
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-2.5">
-        <Input id="otp" name="otp" label="Reset code" placeholder="6-digit code" value={form.otp} onChange={handleChange} inputMode="numeric" autoComplete="one-time-code" compact />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <Input id="password" name="password" type="password" label="New password" placeholder="At least 6 chars" value={form.password} onChange={handleChange} autoComplete="new-password" compact />
-          <Input id="confirmPassword" name="confirmPassword" type="password" label="Confirm password" placeholder="Re-enter password" value={form.confirmPassword} onChange={handleChange} autoComplete="new-password" compact />
-        </div>
-        <Button type="submit" loading={loading} size="compact" className="mt-1">Reset password</Button>
+      {error && <div role="alert" className="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">{error}</div>}
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+        <Input id="otp" name="otp" label="Reset code" placeholder="6-digit code" value={form.otp} onChange={handleChange} inputMode="numeric" autoComplete="one-time-code" />
+        <Input id="password" name="password" type="password" label="New password" placeholder="At least 6 characters" value={form.password} onChange={handleChange} autoComplete="new-password" />
+        <Input id="confirmPassword" name="confirmPassword" type="password" label="Confirm new password" placeholder="Re-enter your password" value={form.confirmPassword} onChange={handleChange} autoComplete="new-password" />
+        <Button type="submit" loading={loading} className="mt-2">Reset password</Button>
       </form>
     </AuthLayout>
   );

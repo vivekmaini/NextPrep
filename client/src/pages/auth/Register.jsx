@@ -13,7 +13,7 @@ const initialNavigation = performance.getEntriesByType("navigation")[0];
 const openedByRefresh = window.location.pathname === "/register" && initialNavigation?.type === "reload";
 let refreshRedirectHandled = false;
 
-function validate({ name, email, password, confirmPassword }) {
+function validate({ name, email, password }) {
   const errors = {};
 
   if (!name.trim()) {
@@ -32,10 +32,6 @@ function validate({ name, email, password, confirmPassword }) {
     errors.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
   }
 
-  if (confirmPassword !== password) {
-    errors.confirmPassword = "Passwords do not match.";
-  }
-
   return errors;
 }
 
@@ -47,7 +43,6 @@ export default function Register() {
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState("");
@@ -119,71 +114,51 @@ export default function Register() {
       <GoogleButton onError={setFormError} />
       <OrDivider />
 
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-2.5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <Input
-            id="name"
-            name="name"
-            type="text"
-            label="Full name"
-            placeholder="Alex Kumar"
-            value={form.name}
-            onChange={handleChange}
-            error={fieldErrors.name}
-            autoComplete="name"
-            compact
-          />
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            label="Email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={handleChange}
-            error={fieldErrors.email}
-            autoComplete="email"
-            compact
-          />
-        </div>
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3.5">
+        <Input
+          id="name"
+          name="name"
+          type="text"
+          label="Full name"
+          placeholder="Enter your full name"
+          value={form.name}
+          onChange={handleChange}
+          error={fieldErrors.name}
+          autoComplete="name"
+        />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          label="Email"
+          placeholder="you@example.com"
+          value={form.email}
+          onChange={handleChange}
+          error={fieldErrors.email}
+          autoComplete="email"
+        />
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          label="Password"
+          placeholder="At least 8 characters"
+          value={form.password}
+          onChange={handleChange}
+          error={fieldErrors.password}
+          autoComplete="new-password"
+        />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            label="Password"
-            placeholder="Min 8 chars"
-            value={form.password}
-            onChange={handleChange}
-            error={fieldErrors.password}
-            autoComplete="new-password"
-            compact
-          />
-          <Input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            label="Confirm password"
-            placeholder="Re-enter password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            error={fieldErrors.confirmPassword}
-            autoComplete="new-password"
-            compact
-          />
-        </div>
-
-        <Button type="submit" loading={loading} size="compact" className="mt-1">
+        <Button type="submit" loading={loading} className="mt-2">
           Create account
         </Button>
 
-        <p className="mt-2 text-center text-[11px] text-slate-500 leading-normal">
+        <p className="mt-2 text-center text-xs text-slate-500">
           By signing up, you agree to our{" "}
           <Link to="/terms" className="font-semibold text-[#3355E8] hover:underline">
             Terms
           </Link>{" "}
-          and{" "}
+          &amp;{" "}
           <Link to="/privacy" className="font-semibold text-[#3355E8] hover:underline">
             Privacy Policy
           </Link>.

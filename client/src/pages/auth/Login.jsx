@@ -104,7 +104,7 @@ export default function Login() {
       <GoogleButton onError={setFormError} />
       <OrDivider />
 
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <Input
           id="email"
           name="email"
@@ -115,7 +115,6 @@ export default function Login() {
           onChange={handleChange}
           error={fieldErrors.email}
           autoComplete="email"
-          compact
         />
         <Input
           id="password"
@@ -127,16 +126,15 @@ export default function Login() {
           onChange={handleChange}
           error={fieldErrors.password}
           autoComplete="current-password"
-          compact
         />
 
         <div className="-mt-1 text-right">
-          <Link to="/forgot-password" className="text-xs font-semibold text-[#0057FF] hover:underline">
+          <Link to="/forgot-password" className="text-sm font-semibold text-[#0057FF] hover:underline">
             Forgot password?
           </Link>
         </div>
 
-        <Button type="submit" loading={loading} size="compact" className="mt-1">
+        <Button type="submit" loading={loading} className="mt-2">
           Log in
         </Button>
       </form>
