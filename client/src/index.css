@@ -409,7 +409,7 @@ html {
 .auth-mountain {
   display: block;
   width: 100%;
-  max-width: 420px;
+  max-width: 450px;
   margin: 0 auto;
   height: auto;
   filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.25));
@@ -418,10 +418,10 @@ html {
 .auth-mountain-stage {
   position: absolute;
   z-index: 0;
-  right: -4%;
-  bottom: -45px;
-  left: -4%;
+  right: -3%;
+  bottom: -10px;
+  left: -3%;
   opacity: 0.95;
   pointer-events: none;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 12%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 8%);
 }
