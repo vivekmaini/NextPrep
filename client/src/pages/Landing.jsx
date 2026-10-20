@@ -83,7 +83,6 @@ export default function Landing() {
               I already have an account
             </Link>
           </div>
-          <div className="mt-7 flex items-center gap-3 text-xs font-medium text-[#6B7280]"><div className="flex -space-x-2"><span className="h-7 w-7 rounded-full border-2 border-[#F7F5EF] bg-[#10173A]" /><span className="h-7 w-7 rounded-full border-2 border-[#F7F5EF] bg-[#3355E8]" /><span className="h-7 w-7 rounded-full border-2 border-[#F7F5EF] bg-[#DCE3FA]" /></div>Built for students preparing for placement season.</div>
         </div>
 
         <div className="animate-enter-visual relative mx-auto w-full max-w-md lg:max-w-none">
