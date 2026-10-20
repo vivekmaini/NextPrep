@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import api from "../../services/api";
 import { chatInterview } from "../../services/interviewService";
 import { getLatestResume } from "../../services/resumeService";
 
@@ -72,19 +73,17 @@ export default function LiveMock({ nightMode }) {
     ];
 
     // API: Save interview start to DB
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const dbRes = await fetch("http://localhost:3001/api/interviews/start", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ role, difficulty, type: interviewType })
-        });
-        const dbData = await dbRes.json();
-        if (dbData.success && dbData.interview) {
-          setDbInterviewId(dbData.interview.id);
-        }
-      } catch(e) { console.error("DB Start Error:", e); }
+    try {
+      const { data: dbData } = await api.post("/interviews/start", {
+        role,
+        difficulty,
+        type: interviewType,
+      });
+      if (dbData?.success && dbData?.interview) {
+        setDbInterviewId(dbData.interview.id);
+      }
+    } catch (e) {
+      console.error("DB Start Error:", e);
     }
 
     try {
@@ -144,18 +143,14 @@ export default function LiveMock({ nightMode }) {
          lastAiQuestion = updatedHistory[updatedHistory.length - 2].content;
       }
       
-      if (dbInterviewId && currentToken) {
+      if (dbInterviewId) {
         try {
-          await fetch("http://localhost:3001/api/interviews/qa", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${currentToken}` },
-            body: JSON.stringify({
-              interviewId: dbInterviewId,
-              question: lastAiQuestion,
-              answer: userMsg,
-              feedback: aiFullResponse,
-              score: null
-            })
+          await api.post("/interviews/qa", {
+            interviewId: dbInterviewId,
+            question: lastAiQuestion,
+            answer: userMsg,
+            feedback: aiFullResponse,
+            score: null
           });
         } catch(e) { console.error("DB QA Error:", e); }
       }

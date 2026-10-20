@@ -31,9 +31,9 @@ const questionSchema = {
 
 const generateQuestions = async ({ mode, difficulty, targetRole, experienceLevel, skills, count = 5, existingQuestions = [] }) => {
   const avoidContext = existingQuestions.length > 0 ? "\nCRITICAL RULE: DO NOT REPEAT OR REPHRASE THESE QUESTIONS: " + existingQuestions.join(" | ") : "";
-  const ragContext = await buildRagContext(`${mode} interview preparation for ${targetRole} ${skills}`, 1);
   const prompt = `You are a senior technical interviewer. Create exactly ${count} progressive ${mode} interview questions for a ${experienceLevel} candidate targeting ${targetRole}. Stated skills: ${skills || "not provided"}. Difficulty: ${difficulty}.
-Make questions realistic, practical, and focused on real-world problem-solving. Avoid generic filler questions.${avoidContext}\n\nPREPARATION CONTEXT:\n${ragContext}`;
+Make questions realistic, practical, and focused on real-world problem-solving. Avoid generic filler questions.${avoidContext}`;
+
   const result = await generateJson({ systemPrompt: "You design realistic, challenging mock interviews for competitive placements.", prompt, schema: questionSchema, temperature: 0.7 });
   const questions = Array.isArray(result.questions) ? result.questions.map(String).map((item) => item.trim()).filter(Boolean).slice(0, count) : [];
   if (questions.length < Math.min(count, 2)) throw new Error("Could not create interview questions. Please try again.");

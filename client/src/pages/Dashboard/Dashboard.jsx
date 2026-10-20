@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import BrandLogo from "../../components/ui/BrandLogo";
 import MountainIllustration from "../../components/ui/MountainIllustration";
@@ -32,10 +33,7 @@ function DashboardContent() {
         const token = localStorage.getItem("token");
         if (!token) return;
         
-        const response = await fetch("http://localhost:3001/api/interviews/history", {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        const data = await response.json();
+        const { data } = await api.get("/interviews/history");
         
         if (data.success && data.history) {
           // Format DB data for the frontend Activity view
@@ -105,18 +103,12 @@ function DashboardContent() {
     setResult(null);
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/interviews/evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({
-          mode: "Behavioral",
-          difficulty: "Balanced",
-          question: behavioralPrompts[promptIndex],
-          answer: answer
-        })
+      const { data } = await api.post("/interviews/evaluate", {
+        mode: "Behavioral",
+        difficulty: "Balanced",
+        question: behavioralPrompts[promptIndex],
+        answer: answer
       });
-      const data = await res.json();
       
       if (data.success && data.feedback) {
         const score = data.feedback.score;

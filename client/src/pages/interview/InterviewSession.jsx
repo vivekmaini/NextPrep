@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { completeInterview } from "../../services/interviewService";
+import { completeInterview, generateMoreQuestions } from "../../services/interviewService";
 
 const questionSets = {
   Behavioral: ["Tell me about a difficult problem you solved.", "Describe a time you received difficult feedback.", "Tell me about a time you worked with conflicting priorities.", "Describe a project you are proud of and your contribution.", "What would you do differently in a past team project?"],
@@ -29,33 +29,33 @@ export default function InterviewSession() {
   
 
 
-  // Background question loader (Batched 5-5-5)
+  // Fast background question loader (fetches all remaining questions in 1 fast call)
   useEffect(() => {
     if (questions.length > 0 && questions.length < 15 && !isFetching.current) {
       isFetching.current = true;
       const fetchMore = async () => {
         try {
           const remaining = 15 - questions.length;
-          const batchSize = Math.min(5, remaining); // Request exactly 5 at a time
-
-          const token = localStorage.getItem("token");
-          const res = await fetch("http://localhost:3001/api/interviews/more", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({ mode, difficulty, targetRole, experienceLevel, skills, existingQuestions: questions, count: batchSize })
+          const data = await generateMoreQuestions({
+            mode,
+            difficulty,
+            targetRole,
+            experienceLevel,
+            skills,
+            existingQuestions: questions,
+            count: remaining,
           });
-          const data = await res.json();
-          if (data.success && data.questions && data.questions.length > 0) {
-            setQuestions(prev => [...prev, ...data.questions]);
-          } else {
-            throw new Error(data.message || "Empty questions from server");
+          if (data?.success && Array.isArray(data.questions) && data.questions.length > 0) {
+            setQuestions(prev => {
+              const combined = [...prev, ...data.questions];
+              return combined.slice(0, 15);
+            });
           }
         } catch (err) { 
           console.error("Failed to load background questions, retrying in 3s...", err); 
-          setTimeout(() => setRetryTrigger(prev => prev + 1), 3000); // Auto-retry after 3s
-        }
-        finally {
-          isFetching.current = false; // Allow the next batch of 5 to trigger automatically
+          setTimeout(() => setRetryTrigger(prev => prev + 1), 3000);
+        } finally {
+          isFetching.current = false;
         }
       };
       fetchMore();
