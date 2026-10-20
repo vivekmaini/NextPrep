@@ -21,7 +21,8 @@ export default function Overview({ firstName, answer, setAnswer, result, checkAn
   const techDesign = getCategoryAvg(["technical", "algorithm", "dsa", "coding"]);
   const behavioral = getCategoryAvg(["behavioral", "hr round", "hr"]);
 
-  const progressPercent = Math.min(100, Math.round((dailyMinutes / 50) * 100));
+  const DAILY_GOAL = 30;
+  const progressPercent = Math.min(100, Math.round((dailyMinutes / DAILY_GOAL) * 100));
   const daysLeft = Math.max(0, Math.ceil((new Date(milestone.date) - new Date()) / (1000 * 60 * 60 * 24)));
 
   return <>
@@ -77,13 +78,13 @@ export default function Overview({ firstName, answer, setAnswer, result, checkAn
           <div className="flex h-14 w-14 sm:h-[64px] sm:w-[64px] items-center justify-center rounded-full border-[6px] border-[#EAEEFC] bg-white text-base font-bold text-[#3355E8] shadow-sm">{progressPercent}%</div>
         </div>
         <div className="mt-5 sm:mt-6">
-          <p className={`text-sm leading-6 ${nightMode ? "text-slate-400" : "text-slate-600"}`}>You&apos;ve completed <span className={`font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>{dailyMinutes} of 50 minutes</span> of focused preparation today.</p>
+          <p className={`text-sm leading-6 ${nightMode ? "text-slate-400" : "text-slate-600"}`}>You&apos;ve completed <span className={`font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>{dailyMinutes} of {DAILY_GOAL} minutes</span> of focused preparation today.</p>
           <div className={`mt-4 h-2.5 sm:mt-5 overflow-hidden rounded-full ${nightMode ? "bg-white/10" : "bg-[#EAEEFC]"}`}>
             <div className="h-full rounded-full bg-[#3355E8] transition-all duration-1000 shadow-[0_0_12px_rgba(51,85,232,0.6)]" style={{ width: `${progressPercent}%` }} />
           </div>
           <div className={`mt-3 flex justify-between text-xs font-bold ${nightMode ? "text-slate-400" : "text-slate-500"}`}>
             <span>{dailyMinutes} min done</span>
-            <span>{Math.max(0, 50 - dailyMinutes)} min left</span>
+            <span>{dailyMinutes >= DAILY_GOAL ? "Goal achieved! 🎉" : `${DAILY_GOAL - dailyMinutes} min left`}</span>
           </div>
         </div>
       </article>

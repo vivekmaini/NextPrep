@@ -66,7 +66,34 @@ function DashboardContent() {
     
     fetchHistory();
   }, [page]);
-  const [dailyMinutes, setDailyMinutes] = useState(() => parseInt(localStorage.getItem("nextprep-minutes") || "0"));
+  const [dailyMinutes, setDailyMinutes] = useState(() => {
+    const todayKey = new Date().toISOString().split("T")[0];
+    const savedDate = localStorage.getItem("nextprep-minutes-date");
+    if (savedDate !== todayKey) {
+      localStorage.setItem("nextprep-minutes-date", todayKey);
+      localStorage.setItem("nextprep-minutes", "0");
+      return 0;
+    }
+    return parseInt(localStorage.getItem("nextprep-minutes") || "0", 10);
+  });
+
+  // Real-time active time tracker: counts actual minutes spent preparing on the platform today
+  useEffect(() => {
+    const todayKey = new Date().toISOString().split("T")[0];
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        setDailyMinutes((prev) => {
+          const updated = prev + 1;
+          localStorage.setItem("nextprep-minutes", updated.toString());
+          localStorage.setItem("nextprep-minutes-date", todayKey);
+          return updated;
+        });
+      }
+    }, 60 * 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const [milestone, setMilestone] = useState(() => {
     const saved = localStorage.getItem("nextprep-milestone");
     const defaultDate = new Date();
@@ -131,6 +158,7 @@ function DashboardContent() {
         const newMinutes = dailyMinutes + 5;
         setDailyMinutes(newMinutes);
         localStorage.setItem("nextprep-minutes", newMinutes.toString());
+        localStorage.setItem("nextprep-minutes-date", new Date().toISOString().split("T")[0]);
       } else {
         throw new Error(data.message || "Invalid AI response.");
       }
