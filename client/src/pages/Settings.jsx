@@ -29,14 +29,17 @@ export default function Settings({ nightMode, user }) {
 
   const handleSave = (e) => {
     e.preventDefault();
-    localStorage.setItem("nextprep-profile", JSON.stringify(profile));
+    const updated = {
+      ...profile,
+      email: user?.email || profile.email
+    };
+    localStorage.setItem("nextprep-profile", JSON.stringify(updated));
     
     // Update global context so UI changes immediately
     if (updateUser) {
       updateUser({
         ...user,
         name: `${profile.firstName} ${profile.lastName}`.trim(),
-        email: profile.email,
         role: profile.role
       });
     }
@@ -93,8 +96,19 @@ export default function Settings({ nightMode, user }) {
               <input type="text" value={profile.lastName} onChange={e => setProfile({...profile, lastName: e.target.value})} className={inputClass} />
             </div>
             <div className="sm:col-span-2">
-              <label className={`text-[11px] font-extrabold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-slate-500"}`}>EMAIL ADDRESS</label>
-              <input type="email" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})} className={inputClass} />
+              <div className="flex items-center justify-between mb-1">
+                <label className={`text-[11px] font-extrabold tracking-[0.1em] ${nightMode ? "text-slate-400" : "text-slate-500"}`}>EMAIL ADDRESS</label>
+                <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">🔒 Permanent (Cannot be changed)</span>
+              </div>
+              <input 
+                type="email" 
+                value={profile.email} 
+                disabled 
+                readOnly
+                title="Account email address cannot be changed."
+                className={`${inputClass} cursor-not-allowed opacity-60 selection:bg-none`} 
+              />
+              <p className="mt-1.5 text-[11px] text-slate-400">Your email address is permanently tied to your NextPrep account for security reasons.</p>
             </div>
           </div>
         </div>

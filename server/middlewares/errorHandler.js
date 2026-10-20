@@ -19,6 +19,8 @@ const SAFE_MESSAGES = [
   "Google credential is required.",
   "Email required",
   "Choose a PDF, DOCX, or TXT résumé to upload.",
+  "Please upload your resume in the Resume section before starting an interview.",
+  "Please upload your resume before starting a mock interview.",
   "Too many authentication attempts from this IP, please try again after 15 minutes.",
   "Too many OTP requests. Please wait 15 minutes before trying again.",
 ];

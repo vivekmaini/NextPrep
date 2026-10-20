@@ -18,14 +18,27 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Normalize error responses so callers always get { success, message }.
+// Normalize error responses so callers always get a clean, user-friendly message.
+// Real technical errors are logged to the console, never shown raw to the user.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error?.response?.data?.message ||
-      (error?.request
-        ? "Can't reach the server. Start the NextPrep backend and try again."
-        : "Something went wrong. Please try again.");
+    console.error("─── CLIENT API ERROR ───", error);
+    
+    let message = error?.response?.data?.message;
+    const technicalKeywords = [
+      "enotfound", "econnrefused", "syntax", "stack", "relation", "pg_", 
+      "violates", "cannot find module", "timedout", "econnreset", "null", "undefined"
+    ];
+    
+    const isTechnical = message && technicalKeywords.some(kw => String(message).toLowerCase().includes(kw));
+
+    if (!message || isTechnical) {
+      message = error?.request 
+        ? "Unable to reach the server. Please check your connection and try again."
+        : "Something went wrong. Please try again.";
+    }
+
     return Promise.reject({ success: false, message, status: error?.response?.status });
   }
 );

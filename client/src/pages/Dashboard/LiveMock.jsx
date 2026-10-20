@@ -108,7 +108,10 @@ export default function LiveMock({ nightMode, setPage }) {
       setChatHistory([...initialMessages, { role: "assistant", content: aiReply }]);
     } catch (err) {
       console.error("LiveMock Error:", err);
-      setMessages([{ role: "system", text: `Unable to start interview: ${err.message || "Please check your connection and try again."}` }]);
+      const userMsg = err?.message && !err.message.includes("status code") && !err.message.includes("Network")
+        ? err.message
+        : "Something went wrong. Please try again.";
+      setMessages([{ role: "system", text: userMsg }]);
       setIsThinking(false);
     }
   };
@@ -161,7 +164,10 @@ export default function LiveMock({ nightMode, setPage }) {
 
     } catch (err) {
       console.error("LiveMock Error:", err);
-      setMessages(prev => [...prev, { role: "system", text: `Connection Error: ${err.message}` }]);
+      const cleanMsg = err?.message && !err.message.includes("status code") && !err.message.includes("Network")
+        ? err.message
+        : "Something went wrong. Please try again.";
+      setMessages(prev => [...prev, { role: "system", text: cleanMsg }]);
       setIsThinking(false);
     }
   };
