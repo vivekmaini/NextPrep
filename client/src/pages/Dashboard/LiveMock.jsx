@@ -3,7 +3,7 @@ import api from "../../services/api";
 import { chatInterview } from "../../services/interviewService";
 import { getLatestResume } from "../../services/resumeService";
 
-export default function LiveMock({ nightMode }) {
+export default function LiveMock({ nightMode, setPage }) {
   const [resume, setResume] = useState("");
   const [fileName, setFileName] = useState("");
   const [hasUploadedResume, setHasUploadedResume] = useState(false);
@@ -22,22 +22,26 @@ export default function LiveMock({ nightMode }) {
   const chatEndRef = useRef(null);
 
   useEffect(() => {
-    // 1. Check if user already uploaded a resume to Nextprep
+    // Purge any stale prototype resume text from local storage
+    localStorage.removeItem("nextprep_user_resume");
+
+    // Check if user has uploaded a real resume in NextPrep database
     getLatestResume()
       .then((data) => {
         if (data?.resume) {
           setHasUploadedResume(true);
           setFileName(data.resume.file_name);
-          const feedbackStr = data.resume.feedback ? JSON.stringify(data.resume.feedback) : "";
-          const summaryStr = `[Resume: ${data.resume.file_name} | ATS Score: ${data.resume.ats_score}]\n${feedbackStr}`;
-          setResume(summaryStr);
+        } else {
+          setHasUploadedResume(false);
+          setFileName("");
+          setResume("");
         }
       })
-      .catch(() => {});
-
-    // Fallback to local storage
-    const saved = localStorage.getItem("nextprep_user_resume");
-    if (saved && !resume) setResume(saved);
+      .catch(() => {
+        setHasUploadedResume(false);
+        setFileName("");
+        setResume("");
+      });
   }, []);
 
   useEffect(() => {
@@ -48,22 +52,22 @@ export default function LiveMock({ nightMode }) {
     const file = e.target.files[0];
     if (!file) return;
     setFileName(file.name);
+    setHasUploadedResume(true);
     
     if (file.type === "text/plain" || file.name.endsWith(".md")) {
       const reader = new FileReader();
-      reader.onload = (e) => setResume(e.target.result);
+      reader.onload = (ev) => setResume(ev.target.result);
       reader.readAsText(file);
     } else {
-      setResume(`[Uploaded file: ${file.name}]\n\nCandidate resume file attached.`);
+      setResume(""); // Keep clean, backend will identify the uploaded resume
     }
   };
 
   const startInterview = async () => {
-    if (!resume.trim() && !hasUploadedResume) {
+    if (!hasUploadedResume && !fileName) {
       return alert("Please upload your resume in the Resume section first before starting the mock interview!");
     }
     
-    localStorage.setItem("nextprep_user_resume", resume);
     setIsStarted(true);
     setMessages([{ role: "system", text: `System: Preparing a ${difficulty} ${interviewType} interview for the ${role} role...` }]);
     setIsThinking(true);
@@ -187,24 +191,64 @@ export default function LiveMock({ nightMode }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className={`lg:col-span-2 rounded-[28px] border p-6 sm:p-8 shadow-soft flex flex-col ${nightMode ? "border-white/10 bg-[#10173A]/50" : "border-[#DCE3FA] bg-white"}`}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className={`font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>1. Provide Your Resume</h2>
+              <h2 className={`font-bold ${nightMode ? "text-white" : "text-[#131A2E]"}`}>1. Candidate Resume</h2>
               <div className="flex items-center gap-2">
                 <label className={`cursor-pointer text-xs font-bold px-4 py-2 rounded-full transition-all shadow-sm ${nightMode ? "bg-[#3355E8] text-white hover:bg-blue-600" : "bg-[#3355E8] text-white hover:bg-blue-700"}`}>
                   Upload File
                   <input type="file" accept=".txt,.md,.pdf,.doc,.docx" className="hidden" onChange={handleFileUpload} />
                 </label>
-                <button onClick={() => { setResume(""); setFileName(""); }} className={`text-xs font-bold px-3 py-2 rounded-full ${nightMode ? "bg-white/10 text-slate-300 hover:bg-white/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
-                  Clear
-                </button>
+                {setPage && (
+                  <button
+                    onClick={() => setPage("Resume")}
+                    className={`text-xs font-bold px-3 py-2 rounded-full transition-all ${nightMode ? "bg-white/10 text-slate-300 hover:bg-white/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                  >
+                    Manage Resumes
+                  </button>
+                )}
               </div>
             </div>
-            {fileName && <p className={`mb-3 text-xs font-medium ${nightMode ? "text-green-400" : "text-green-600"}`}>Attached: {fileName}</p>}
-            
+
+            {hasUploadedResume ? (
+              <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-emerald-900 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 font-bold text-lg">✓</span>
+                  <div>
+                    <p className="text-xs font-bold text-emerald-950">Resume Active & Verified</p>
+                    <p className="text-xs text-emerald-700 mt-0.5">{fileName || "Your uploaded resume will be used for AI questioning."}</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-800">Ready</span>
+              </div>
+            ) : (
+              <div className="mb-4 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">📄</span>
+                  <div>
+                    <p className="text-sm font-bold text-amber-950">No Resume Uploaded</p>
+                    <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
+                      You must upload your resume in the <strong>Resume</strong> section before starting a live mock interview.
+                    </p>
+                  </div>
+                </div>
+                {setPage && (
+                  <button
+                    onClick={() => setPage("Resume")}
+                    className="shrink-0 text-xs font-bold px-4 py-2.5 rounded-xl bg-amber-800 text-white shadow-sm hover:bg-amber-900 transition-colors"
+                  >
+                    Go to Resume Section →
+                  </button>
+                )}
+              </div>
+            )}
+
+            <label className={`block text-xs font-bold mb-2 ${nightMode ? "text-slate-400" : "text-slate-500"}`}>
+              EXTRA SKILLS OR TOPICS TO FOCUS ON (OPTIONAL)
+            </label>
             <textarea
               value={resume}
               onChange={(e) => setResume(e.target.value)}
-              placeholder="Paste your resume text here... or upload a file above."
-              className={`w-full flex-1 min-h-[350px] resize-y rounded-2xl p-5 text-sm outline-none transition-all ${
+              placeholder="e.g. Specific topics or projects you'd like the interviewer to ask about (optional)..."
+              className={`w-full flex-1 min-h-[200px] resize-y rounded-2xl p-4 text-sm outline-none transition-all ${
                 nightMode 
                   ? "bg-[#0B1026] text-white border border-white/10 focus:border-[#3355E8]" 
                   : "bg-[#F7F5EF]/50 text-[#131A2E] border border-[#DCE3FA] focus:border-[#3355E8] focus:ring-4 focus:ring-[#3355E8]/10"
@@ -267,17 +311,17 @@ export default function LiveMock({ nightMode }) {
             </div>
 
             <div className={`mt-8 pt-6 border-t ${nightMode ? "border-white/10" : "border-[#DCE3FA]/50"}`}>
-              {(!resume.trim() && !hasUploadedResume) && (
+              {!hasUploadedResume && !fileName && (
                 <p className="text-xs text-amber-500 font-semibold mb-3 text-center">
-                  ⚠️ Please upload your resume above before starting.
+                  ⚠️ Please upload your resume in the Resume section before starting.
                 </p>
               )}
               <button 
                 onClick={startInterview}
-                disabled={!resume.trim() && !hasUploadedResume}
+                disabled={!hasUploadedResume && !fileName}
                 className="w-full rounded-2xl bg-[#3355E8] px-8 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(51,85,232,0.39)] transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(51,85,232,0.23)] disabled:opacity-50 disabled:pointer-events-none"
               >
-                {(resume.trim() || hasUploadedResume) ? "Start Interview" : "Upload Resume to Start"} 
+                {(hasUploadedResume || fileName) ? "Start Interview" : "Upload Resume to Start"} 
               </button>
             </div>
           </div>
