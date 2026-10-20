@@ -2,17 +2,20 @@ const https = require("https");
 const http = require("http");
 
 /**
- * Keeps the Render backend alive by sending a heartbeat self-ping
- * every 10 minutes (Render free tier sleeps after 15 min of inactivity).
+ * Keeps the backend alive:
+ * 1. On Render/Cloud: Sends a heartbeat self-ping every 8 min
+ *    so free-tier hosts don't sleep after 15 min idle.
+ * 2. On Local: Pings local /api/health every 8 min to keep DB
+ *    connections and timers alive.
  */
 const startKeepAlive = () => {
   const backendUrl =
     process.env.RENDER_EXTERNAL_URL ||
     process.env.BACKEND_URL ||
-    "https://nextprep.onrender.com";
+    `http://localhost:${process.env.PORT || 3001}`;
 
-  // Interval: 10 minutes (600,000 ms) - safely within Render's 15 min idle limit
-  const PING_INTERVAL_MS = 10 * 60 * 1000;
+  // Interval: 8 minutes (480,000 ms) - safely under Render's 15 min sleep limit
+  const PING_INTERVAL_MS = 8 * 60 * 1000;
 
   const pingServer = () => {
     try {
@@ -22,26 +25,26 @@ const startKeepAlive = () => {
       client
         .get(url.toString(), (res) => {
           if (res.statusCode === 200) {
-            console.log(`[KeepAlive] Heartbeat ping successful (${url.toString()}) - Status: 200 OK`);
+            console.log(`[KeepAlive] Heartbeat ping OK (${url.toString()}) - Status: 200`);
           } else {
             console.log(`[KeepAlive] Heartbeat ping returned status: ${res.statusCode}`);
           }
         })
         .on("error", (err) => {
-          console.warn(`[KeepAlive] Ping warning (will retry in 10m): ${err.message}`);
+          console.warn(`[KeepAlive] Ping notice: ${err.message}`);
         });
     } catch (err) {
       console.warn(`[KeepAlive] Could not parse backend URL: ${err.message}`);
     }
   };
 
-  // Initial delay of 2 minutes after startup before first ping
+  // Initial delay of 30 seconds after startup before first ping
   setTimeout(() => {
     pingServer();
     setInterval(pingServer, PING_INTERVAL_MS);
-  }, 2 * 60 * 1000);
+  }, 30 * 1000);
 
-  console.log(`[KeepAlive] Background self-ping activated for: ${backendUrl} (heartbeat every 10 min)`);
+  console.log(`[KeepAlive] Background self-ping activated for: ${backendUrl} (heartbeat every 8 min)`);
 };
 
 module.exports = { startKeepAlive };
