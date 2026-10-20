@@ -7,6 +7,7 @@ export default function LiveMock({ nightMode, setPage }) {
   const [resume, setResume] = useState("");
   const [fileName, setFileName] = useState("");
   const [hasUploadedResume, setHasUploadedResume] = useState(false);
+  const [showResumeDisclaimer, setShowResumeDisclaimer] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -65,7 +66,8 @@ export default function LiveMock({ nightMode, setPage }) {
 
   const startInterview = async () => {
     if (!hasUploadedResume && !fileName) {
-      return alert("Please upload your resume in the Resume section first before starting the mock interview!");
+      setShowResumeDisclaimer(true);
+      return;
     }
     
     setIsStarted(true);
@@ -108,6 +110,13 @@ export default function LiveMock({ nightMode, setPage }) {
       setChatHistory([...initialMessages, { role: "assistant", content: aiReply }]);
     } catch (err) {
       console.error("LiveMock Error:", err);
+      if (err?.noResume || err?.message?.toLowerCase().includes("resume")) {
+        setHasUploadedResume(false);
+        setShowResumeDisclaimer(true);
+        setIsStarted(false);
+        setIsThinking(false);
+        return;
+      }
       const userMsg = err?.message && !err.message.includes("status code") && !err.message.includes("Network")
         ? err.message
         : "Something went wrong. Please try again.";
@@ -224,27 +233,7 @@ export default function LiveMock({ nightMode, setPage }) {
                 </div>
                 <span className="text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-800">Ready</span>
               </div>
-            ) : (
-              <div className="mb-4 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">📄</span>
-                  <div>
-                    <p className="text-sm font-bold text-amber-950">No Resume Uploaded</p>
-                    <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
-                      You must upload your resume in the <strong>Resume</strong> section before starting a live mock interview.
-                    </p>
-                  </div>
-                </div>
-                {setPage && (
-                  <button
-                    onClick={() => setPage("Resume")}
-                    className="shrink-0 text-xs font-bold px-4 py-2.5 rounded-xl bg-amber-800 text-white shadow-sm hover:bg-amber-900 transition-colors"
-                  >
-                    Go to Resume Section →
-                  </button>
-                )}
-              </div>
-            )}
+            ) : null}
 
             <label className={`block text-xs font-bold mb-2 ${nightMode ? "text-slate-400" : "text-slate-500"}`}>
               EXTRA SKILLS OR TOPICS TO FOCUS ON (OPTIONAL)
@@ -316,21 +305,53 @@ export default function LiveMock({ nightMode, setPage }) {
             </div>
 
             <div className={`mt-8 pt-6 border-t ${nightMode ? "border-white/10" : "border-[#DCE3FA]/50"}`}>
-              {!hasUploadedResume && !fileName && (
-                <p className="text-xs text-amber-500 font-semibold mb-3 text-center">
-                  ⚠️ Please upload your resume in the Resume section before starting.
-                </p>
-              )}
               <button 
                 onClick={startInterview}
-                disabled={!hasUploadedResume && !fileName}
-                className="w-full rounded-2xl bg-[#3355E8] px-8 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(51,85,232,0.39)] transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(51,85,232,0.23)] disabled:opacity-50 disabled:pointer-events-none"
+                className="w-full rounded-2xl bg-[#3355E8] px-8 py-4 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(51,85,232,0.39)] transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(51,85,232,0.23)]"
               >
-                {(hasUploadedResume || fileName) ? "Start Interview" : "Upload Resume to Start"} 
+                Start Interview
               </button>
             </div>
           </div>
         </div>
+
+        {showResumeDisclaimer && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className={`relative w-full max-w-md rounded-[28px] border p-6 sm:p-8 shadow-2xl transition-all ${nightMode ? "border-white/10 bg-[#10173A] text-white" : "border-[#DCE3FA] bg-white text-[#131A2E]"}`}>
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 text-2xl mb-5">
+                📄
+              </div>
+              
+              <h3 className="font-hero text-2xl font-bold tracking-tight">
+                Resume Required
+              </h3>
+              
+              <p className={`mt-3 text-sm leading-relaxed ${nightMode ? "text-slate-300" : "text-slate-600"}`}>
+                Live Mock Interview me AI aapke uploaded resume aur projects ke base par questions generate karta hai. Please pehle <strong>Resume</strong> section me jakar apna resume upload karein.
+              </p>
+
+              <div className="mt-7 flex flex-col sm:flex-row gap-3">
+                {setPage && (
+                  <button
+                    onClick={() => {
+                      setShowResumeDisclaimer(false);
+                      setPage("Resume");
+                    }}
+                    className="flex-1 rounded-xl bg-[#3355E8] px-5 py-3 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-600 transition-all text-center"
+                  >
+                    Go to Resume Section →
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowResumeDisclaimer(false)}
+                  className={`rounded-xl px-5 py-3 text-sm font-bold transition-all border ${nightMode ? "border-white/10 text-slate-300 hover:bg-white/5" : "border-slate-200 text-slate-600 hover:bg-slate-100"}`}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     );
   }

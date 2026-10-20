@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { startInterview } from "../../services/interviewService";
-import { getLatestResume } from "../../services/resumeService";
 
 const modes = ["Behavioral", "Technical", "HR round"];
 
@@ -13,19 +12,9 @@ export default function InterviewPractice() {
   const [skills, setSkills] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [hasResume, setHasResume] = useState(null); // null = checking, true/false
   const navigate = useNavigate();
 
-  useEffect(() => {
-    getLatestResume()
-      .then((data) => setHasResume(Boolean(data?.resume)))
-      .catch(() => setHasResume(false));
-  }, []);
-
   const begin = async () => {
-    if (hasResume === false) {
-      return setError("Please upload your resume in the Resume section before starting an interview.");
-    }
     if (mode === "Technical" && targetRole.trim().length < 2) return setError("Add the technical role you are preparing for.");
     setLoading(true); setError("");
     try { 
@@ -33,9 +22,6 @@ export default function InterviewPractice() {
       navigate("/interview", { state: { mode, difficulty, targetRole: targetRole.trim(), experienceLevel, skills: skills.trim(), questions: data.questions } }); 
     }
     catch (requestError) { 
-      if (requestError.noResume || requestError.message?.toLowerCase().includes("resume")) {
-        setHasResume(false);
-      }
       setError(requestError.message || "Couldn’t create your tailored interview."); 
     }
     finally { setLoading(false); }
@@ -63,23 +49,6 @@ export default function InterviewPractice() {
       <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">
         Choose an interview style. Technical sessions adapt questions to your role, experience, and uploaded resume.
       </p>
-
-      {hasResume === false && (
-        <div className="mt-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 text-amber-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <span className="text-xl">📄</span>
-            <div>
-              <h3 className="font-bold text-sm text-amber-950">Resume Required</h3>
-              <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
-                You must upload your resume in the <strong>Resume</strong> section before starting a mock interview.
-              </p>
-            </div>
-          </div>
-          <span className="shrink-0 text-xs font-bold px-4 py-2 rounded-xl bg-amber-800 text-white shadow-sm inline-block text-center">
-            Go to Resume tab above
-          </span>
-        </div>
-      )}
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
         {modes.map((item) => (
@@ -164,14 +133,12 @@ export default function InterviewPractice() {
         {error && <p className="mt-4 text-sm font-semibold text-[#C63D32] bg-red-50 p-3 rounded-xl border border-red-200">{error}</p>}
 
         <button
-          disabled={loading || hasResume === false}
+          disabled={loading}
           onClick={begin}
           className="mt-7 rounded-xl bg-[#0057FF] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
         >
           {loading
             ? "Creating your interview…"
-            : hasResume === false
-            ? "Upload Resume to Unlock Interview"
             : mode === "Technical"
             ? "Create technical interview →"
             : "Start full interview →"}

@@ -10,20 +10,11 @@ const startInterview = async (req, res) => {
     const userId = req.user.id || req.user.userId;
     const { mode, difficulty, targetRole, experienceLevel, skills, role, type } = req.body;
 
-    // Strict requirement: User MUST have uploaded a resume before starting an interview
+    // Optional: Personalize with resume if user uploaded one
     const latestResume = await resumeModel.getLatestResumeForUser(userId);
-    if (!latestResume) {
-      return res.status(400).json({
-        success: false,
-        noResume: true,
-        message: "Please upload your resume in the Resume section before starting an interview.",
-      });
-    }
-
-    // Extract skills and target from resume if not provided
-    const resumeRole = latestResume.file_name ? latestResume.file_name.replace(/\.[^/.]+$/, "") : "";
+    const resumeRole = latestResume?.file_name ? latestResume.file_name.replace(/\.[^/.]+$/, "") : "";
     const effectiveRole = targetRole || role || resumeRole || "Software Engineer";
-    const effectiveSkills = skills || (latestResume.feedback?.missingKeywords ? latestResume.feedback.missingKeywords.join(", ") : "");
+    const effectiveSkills = skills || (latestResume?.feedback?.missingKeywords ? latestResume.feedback.missingKeywords.join(", ") : "");
 
     // 1. Generate questions via AI (For Practice Mode)
     let questions = [];
