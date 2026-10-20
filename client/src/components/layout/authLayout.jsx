@@ -4,7 +4,7 @@ import MountainIllustration from "../ui/MountainIllustration";
 export default function AuthLayout({ eyebrow, title, subtitle, children, footer }) {
   return (
     <div className="min-h-screen bg-[#F8F9FC] p-4 sm:p-6 lg:flex lg:items-center lg:justify-center">
-      <main className="mx-auto flex w-full max-w-[1040px] overflow-hidden rounded-[32px] border border-slate-200/60 bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] lg:min-h-[520px] lg:flex-row flex-col">
+      <main className="mx-auto flex w-full max-w-[1040px] overflow-hidden rounded-[32px] border border-slate-200/60 bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] lg:min-h-[570px] lg:flex-row flex-col">
         
         {/* LEFT PANEL - Premium Dark Section */}
         <section className="relative hidden w-[45%] overflow-hidden bg-[#0A0F24] p-8 lg:p-10 text-white lg:flex lg:flex-col justify-between">
@@ -15,20 +15,20 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
           {/* Top Content */}
           <div className="relative z-20">
             <BrandLogo dark />
-            <div className="mt-12">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[10px] font-bold tracking-widest text-white/80 backdrop-blur-md shadow-sm">
+            <div className="mt-8 lg:mt-9">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1 text-[10px] font-bold tracking-widest text-white/80 backdrop-blur-md shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#3355E8] animate-pulse" /> CAREER PREP, SIMPLIFIED
               </span>
-              <h2 className="mt-5 font-hero text-[44px] sm:text-[48px] font-extrabold leading-[1.08] tracking-[-0.05em] text-white">
+              <h2 className="mt-4 font-hero text-[34px] sm:text-[38px] font-extrabold leading-[1.12] tracking-[-0.04em] text-white">
                 Master your <br/> next interview.
               </h2>
-              <p className="mt-4 text-sm leading-relaxed text-slate-400 max-w-sm">
-                Join top candidates preparing with highly curated DSA roadmaps, real-world system design questions, and AI mock interviews.
+              <p className="mt-3 text-xs sm:text-sm leading-relaxed text-slate-400 max-w-[340px]">
+                Join top candidates preparing with curated DSA roadmaps, real-world system design questions, and AI mock interviews.
               </p>
             </div>
           </div>
 
-          {/* Bottom Mountain Illustration properly aligned using original CSS */}
+          {/* Bottom Mountain Illustration cleanly anchored below text */}
           <div className="auth-mountain-stage pointer-events-none" aria-hidden="true">
             <MountainIllustration className="auth-mountain" />
           </div>
